@@ -9,6 +9,7 @@ import MagicBento from '@/components/ui/MagicBento';
 import Particles from '@/components/ui/Particles';
 import Hero from '@/components/Hero';
 import MagneticWrapper from '@/components/ui/MagneticWrapper';
+import Image from 'next/image';
 
 // ✅ Funkcje zamiast wyrażeń — TypeScript nie wnioskuje 'never'
 const rIC = (cb: IdleRequestCallback): number => {
@@ -337,29 +338,29 @@ export default function PortfolioHome() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-5xl text-left w-full relative z-10">
               <MagicBento>
                 <Zap className="text-orange-500 mb-4 w-8 h-8 lg:w-10 lg:h-10" />
-                <h3 className="font-bold text-base lg:text-lg mb-2 text-white uppercase italic">Nowoczesne Strony WWW</h3>
-                <p className="text-xs text-zinc-400">
+                <h2 className="font-bold text-base lg:text-lg mb-2 text-white uppercase italic">Nowoczesne Strony WWW</h2>
+                <p className="text-xs text-zinc-300">
                   Projektuję i koduję od zera strony firmowe oraz Landing Page, które ładują się natychmiast.
                 </p>
               </MagicBento>
               <MagicBento>
                 <Smartphone className="text-red-500 mb-4 w-8 h-8 lg:w-10 lg:h-10" />
-                <h3 className="font-bold text-base lg:text-lg mb-2 text-white uppercase italic">Aplikacje SaaS</h3>
-                <p className="text-xs text-zinc-400">
+                <h2 className="font-bold text-base lg:text-lg mb-2 text-white uppercase italic">Aplikacje SaaS</h2>
+                <p className="text-xs text-zinc-300">
                   Zmieniam skomplikowane procesy w proste narzędzia. Tworzę dedykowane systemy webowe.
                 </p>
               </MagicBento>
               <MagicBento>
                 <Gauge className="text-rose-500 mb-4 w-8 h-8 lg:w-10 lg:h-10" />
-                <h3 className="font-bold text-base lg:text-lg mb-2 text-white uppercase italic">Optymalizacja i SEO</h3>
-                <p className="text-xs text-zinc-400">
+                <h2 className="font-bold text-base lg:text-lg mb-2 text-white uppercase italic">Optymalizacja i SEO</h2>
+                <p className="text-xs text-zinc-300">
                   Wykonuję audyty techniczne i naprawiam błędy, przywracając witrynie szybkość.
                 </p>
               </MagicBento>
               <MagicBento>
                 <Code2 className="text-orange-400 mb-4 w-8 h-8 lg:w-10 lg:h-10" />
-                <h3 className="font-bold text-base lg:text-lg mb-2 text-white uppercase italic">Narzędzia Dedykowane</h3>
-                <p className="text-xs text-zinc-400">
+                <h2 className="font-bold text-base lg:text-lg mb-2 text-white uppercase italic">Narzędzia Dedykowane</h2>
+                <p className="text-xs text-zinc-300">
                   Buduję inteligentne konfiguratory ofert i kalkulatory wycen generujące zapytania.
                 </p>
               </MagicBento>
@@ -405,7 +406,8 @@ export default function PortfolioHome() {
               </span>
             </p>
 
-            <div className="mt-16 flex flex-col items-center gap-4 opacity-30 animate-bounce hidden lg:flex">
+            {/* 🔧 OPTYMALIZACJA KONTRASTU (usunięto opacity-30, dodano szary tekst z dobrym kontrastem) */}
+            <div className="mt-16 flex flex-col items-center gap-4 text-zinc-500 animate-bounce hidden lg:flex">
               <span className="text-[10px] font-black uppercase tracking-widest">Scrolluj do Portfolio</span>
               <ArrowRight className="w-5 h-5 rotate-90" />
             </div>
@@ -434,7 +436,8 @@ export default function PortfolioHome() {
           <section className="w-full lg:w-1/3 min-h-screen lg:h-full flex items-center justify-center bg-zinc-950 lg:border-l border-white/5 px-6 lg:px-20 py-20 lg:py-0">
             <div className="flex flex-col lg:grid lg:grid-cols-2 gap-10 lg:gap-16 items-center w-full">
               <div className="space-y-6 text-center lg:text-left order-2 lg:order-1 relative z-10">
-                <span className="px-4 py-1.5 bg-orange-500/20 border border-orange-500/30 text-orange-400 text-[9px] lg:text-[10px] font-black uppercase rounded-full inline-block tracking-widest">
+                {/* 🔧 OPTYMALIZACJA A11Y: Zwiększony kontrast (text-orange-300 z pomarańczowym tłem) */}
+                <span className="px-4 py-1.5 bg-orange-500/20 border border-orange-500/30 text-orange-300 text-[9px] lg:text-[10px] font-black uppercase rounded-full inline-block tracking-widest">
                   E-commerce / PWA
                 </span>
                 <h3 className="text-5xl sm:text-6xl font-black italic text-white uppercase tracking-tighter">
@@ -455,7 +458,8 @@ export default function PortfolioHome() {
                           bgClass: 'bg-orange-600',
                         })
                       }
-                      className="px-8 py-4 bg-orange-600 text-white font-black rounded-full uppercase text-[10px] lg:text-xs tracking-widest cursor-pointer shadow-lg shadow-orange-900/30 hover:bg-orange-700 transition-colors"
+                      /* 🔧 OPTYMALIZACJA A11Y: Ciemniejszy pomarańcz bg-orange-700 dla białego tekstu */
+                      className="px-8 py-4 bg-orange-700 text-white font-black rounded-full uppercase text-[10px] lg:text-xs tracking-widest cursor-pointer shadow-lg shadow-orange-900/30 hover:bg-orange-600 transition-colors"
                     >
                       Uruchom Demo
                     </button>
@@ -473,9 +477,18 @@ export default function PortfolioHome() {
                 }
                 className="aspect-4/3 w-full bg-zinc-900 rounded-[2rem] border border-white/10 overflow-hidden relative group shadow-2xl cursor-pointer flex items-center justify-center order-1 lg:order-2"
               >
-                <div className="absolute inset-0 bg-linear-to-br from-orange-600/40 to-black/80 z-0 transition-opacity duration-700 group-hover:opacity-0" />
-                <div className="absolute inset-0 bg-[url('/sklepurwis.webp')] bg-cover bg-center opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 z-10" />
-                <span className="text-white font-black text-[10px] lg:text-xs uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100 transition-all duration-500 relative z-20 px-6 py-3 bg-orange-600/90 backdrop-blur-md rounded-xl border border-white/20 shadow-2xl shadow-orange-900/50 pointer-events-none">
+                <div className="absolute inset-0 bg-[linear-gradient(to_bottom_right,rgba(234,88,12,0.4),rgba(0,0,0,0.8))] z-0 transition-opacity duration-700 group-hover:opacity-0" />
+                
+                <Image 
+                  src="/sklepurwis.webp" 
+                  alt="Podgląd projektu Sklep Urwis" 
+                  fill 
+                  sizes="(max-width: 1024px) 100vw, 33vw"
+                  className="object-cover object-center opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 z-10" 
+                />
+                
+                {/* 🔧 OPTYMALIZACJA KONTRASTU: Ciemne tło dymka dla lepszej widoczności tekstu */}
+                <span className="text-white font-black text-[10px] lg:text-xs uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100 transition-all duration-500 relative z-20 px-6 py-3 bg-zinc-900/90 backdrop-blur-md rounded-xl border border-white/20 shadow-2xl shadow-black/50 pointer-events-none">
                   Podgląd Demo
                 </span>
               </div>
@@ -486,7 +499,7 @@ export default function PortfolioHome() {
           <section className="w-full lg:w-1/3 min-h-screen lg:h-full flex items-center justify-center bg-zinc-950 lg:border-l border-white/5 px-6 lg:px-20 py-20 lg:py-0 border-t lg:border-none">
             <div className="flex flex-col lg:grid lg:grid-cols-2 gap-10 lg:gap-16 items-center w-full">
               <div className="space-y-6 text-center lg:text-left order-2 lg:order-1 relative z-10">
-                <span className="px-4 py-1.5 bg-orange-500/20 border border-orange-500/30 text-orange-400 text-[9px] lg:text-[10px] font-black uppercase rounded-full inline-block tracking-widest">
+                <span className="px-4 py-1.5 bg-orange-500/20 border border-orange-500/30 text-orange-300 text-[9px] lg:text-[10px] font-black uppercase rounded-full inline-block tracking-widest">
                   SaaS / Gastronomia
                 </span>
                 <h3 className="text-5xl sm:text-6xl font-black italic text-white uppercase tracking-tighter">
@@ -507,7 +520,7 @@ export default function PortfolioHome() {
                           bgClass: 'bg-orange-600',
                         })
                       }
-                      className="px-8 py-4 bg-orange-600 text-white font-black rounded-full uppercase text-[10px] lg:text-xs tracking-widest cursor-pointer shadow-lg shadow-orange-900/30 hover:bg-orange-700 transition-colors"
+                      className="px-8 py-4 bg-orange-700 text-white font-black rounded-full uppercase text-[10px] lg:text-xs tracking-widest cursor-pointer shadow-lg shadow-orange-900/30 hover:bg-orange-600 transition-colors"
                     >
                       Uruchom Demo
                     </button>
@@ -525,9 +538,17 @@ export default function PortfolioHome() {
                 }
                 className="aspect-4/3 w-full bg-zinc-900 rounded-[2rem] border border-white/10 flex items-center justify-center relative overflow-hidden shadow-2xl cursor-pointer group order-1 lg:order-2"
               >
-                <div className="absolute inset-0 bg-linear-to-br from-orange-600/40 to-black/80 z-0 transition-opacity duration-700 group-hover:opacity-0" />
-                <div className="absolute inset-0 bg-[url('/zamowtu.webp')] bg-cover bg-center opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 z-10" />
-                <span className="text-white font-black text-[10px] lg:text-xs uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100 transition-all duration-500 relative z-20 px-6 py-3 bg-orange-600/90 backdrop-blur-md rounded-xl border border-white/20 shadow-2xl shadow-orange-900/50 pointer-events-none">
+                <div className="absolute inset-0 bg-[linear-gradient(to_bottom_right,rgba(234,88,12,0.4),rgba(0,0,0,0.8))] z-0 transition-opacity duration-700 group-hover:opacity-0" />
+                
+                <Image 
+                  src="/zamowtu.webp" 
+                  alt="Podgląd platformy zamowtu.pl" 
+                  fill 
+                  sizes="(max-width: 1024px) 100vw, 33vw"
+                  className="object-cover object-center opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 z-10" 
+                />
+
+                <span className="text-white font-black text-[10px] lg:text-xs uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100 transition-all duration-500 relative z-20 px-6 py-3 bg-zinc-900/90 backdrop-blur-md rounded-xl border border-white/20 shadow-2xl shadow-black/50 pointer-events-none">
                   Podgląd Demo
                 </span>
               </div>
@@ -555,10 +576,12 @@ export default function PortfolioHome() {
                 kontakt@molendadevelopment.pl
               </a>
               <div className="flex justify-center lg:justify-start gap-4 mt-10 lg:mt-12">
+                {/* 🔧 OPTYMALIZACJA A11Y: Dodałem aria-label do linków społecznościowych */}
                 <a
                   href="https://www.facebook.com/profile.php?id=61564367727437"
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label="Profil na Facebooku"
                   onClick={() => pushGTMEvent('klikniecie_social', { platforma: 'Facebook' })}
                   className="p-3 bg-white/5 rounded-full border border-white/10 hover:bg-[#1877F2] hover:border-[#1877F2] transition-all group"
                 >
@@ -568,6 +591,7 @@ export default function PortfolioHome() {
                   href="https://www.linkedin.com/in/marcin-molenda-447251289/"
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label="Profil na LinkedIn"
                   onClick={() => pushGTMEvent('klikniecie_social', { platforma: 'LinkedIn' })}
                   className="p-3 bg-white/5 rounded-full border border-white/10 hover:bg-blue-600 hover:border-blue-600 transition-all group"
                 >
@@ -590,10 +614,12 @@ export default function PortfolioHome() {
                 </motion.div>
               ) : (
                 <>
+                  {/* 🔧 OPTYMALIZACJA A11Y: Dodałem aria-label zastępujące <label> w polach wejściowych */}
                   <input
                     type="text"
                     name="Imię/Firma"
                     placeholder="Imię / Nazwa Firmy"
+                    aria-label="Imię lub Nazwa Firmy"
                     required
                     disabled={isSubmitting}
                     className="w-full p-4 lg:p-5 bg-black/50 border border-white/10 rounded-2xl outline-none focus:border-orange-500 transition-all font-light text-sm lg:text-base disabled:opacity-50"
@@ -602,6 +628,7 @@ export default function PortfolioHome() {
                     type="email"
                     name="Email"
                     placeholder="Adres e-mail"
+                    aria-label="Adres e-mail"
                     required
                     disabled={isSubmitting}
                     className="w-full p-4 lg:p-5 bg-black/50 border border-white/10 rounded-2xl outline-none focus:border-orange-500 transition-all font-light text-sm lg:text-base disabled:opacity-50"
@@ -609,6 +636,7 @@ export default function PortfolioHome() {
                   <textarea
                     name="Wiadomość"
                     placeholder="Opisz krótko, czego potrzebujesz..."
+                    aria-label="Treść wiadomości"
                     rows={4}
                     required
                     disabled={isSubmitting}
@@ -629,7 +657,7 @@ export default function PortfolioHome() {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full py-5 lg:py-6 bg-gradient-to-r from-orange-500 to-red-600 text-white font-black uppercase text-[10px] lg:text-xs tracking-widest rounded-2xl shadow-xl hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="w-full py-5 lg:py-6 bg-gradient-to-r from-orange-700 to-red-700 text-white font-black uppercase text-[10px] lg:text-xs tracking-widest rounded-2xl shadow-xl hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       {isSubmitting ? 'Wysyłanie...' : 'Wyślij zapytanie'}
                     </button>
@@ -639,7 +667,7 @@ export default function PortfolioHome() {
             </form>
           </div>
 
-          <div className="mt-12 lg:mt-20 text-[9px] lg:text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] text-center mb-10 lg:mb-0">
+          <div className="mt-12 lg:mt-20 text-[9px] lg:text-[10px] text-zinc-500 font-black uppercase tracking-[0.2em] text-center mb-10 lg:mb-0">
             &copy; {new Date().getFullYear()} Marcin Molenda - molendadevelopment.pl
             <br />
             Wykonano w technologii Next.js 15 &amp; React 19
