@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { GoogleTagManager } from '@next/third-parties/google';
 import "./globals.css";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,45 +16,57 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Marcin Molenda | Strony Internetowe, Aplikacje Webowe i Optymalizacja",
   description: "Twój biznes zasługuje na lepszy kod. Projektuję od zera wydajne strony i aplikacje oraz modernizuję istniejące witryny. Wdrażam technologie i SEO, które deklasują konkurencję.",
+  keywords: ['tworzenie stron internetowych', 'programista Next.js', 'aplikacje webowe', 'developer Polska', 'optymalizacja SEO'],
+  authors: [{ name: 'Marcin Molenda', url: 'https://molendadevelopment.pl' }],
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, 'max-image-preview': 'large' },
+  },
   alternates: {
     canonical: 'https://molendadevelopment.pl',
+  },
+  openGraph: {
+    title: 'Marcin Molenda | Strony Internetowe i Aplikacje Webowe Next.js',
+    description: 'Dedykowane strony i aplikacje webowe w Next.js 16. Szybkość ładowania < 1s, Lighthouse 100. Obsługa firm z całej Polski.',
+    url: 'https://molendadevelopment.pl',
+    siteName: 'Marcin Molenda Portfolio',
+    locale: 'pl_PL',
+    type: 'website',
+    images: [{
+      url: 'https://molendadevelopment.pl/og-image.webp',
+      width: 1200,
+      height: 630,
+      alt: 'Marcin Molenda – Tworzenie stron i aplikacji webowych',
+    }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Marcin Molenda | Strony i Aplikacje Webowe',
+    description: 'Dedykowane strony i aplikacje webowe w Next.js 15.',
+    images: ['https://molendadevelopment.pl/og-image.webp'],
   },
   icons: {
     icon: [
       { url: '/favicon.ico' },
       { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
-      { url: '/favicon32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' }, // ← poprawiony myślnik
     ],
-    apple: [
-      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
-    ],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
     other: [
       { rel: 'icon', url: '/android-chrome-192x192.png', sizes: '192x192' },
       { rel: 'icon', url: '/android-chrome-512x512.png', sizes: '512x512' },
     ]
   },
-  openGraph: {
-    title: 'Marcin Molenda | Modern Web Development',
-    description: 'Ultraszybkie strony Next.js i aplikacje webowe z efektem WOW.',
-    url: 'https://molendadevelopment.pl',
-    siteName: 'Marcin Molenda Portfolio',
-    locale: 'pl_PL',
-    type: 'website',
-  },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pl">
-      {/* Wstrzykiwanie GTM po ID */}
-      <GoogleTagManager gtmId="GTM-K2TJZ899" />
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        
+        {/* JSON-LD pozostaje bez zmian */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -75,7 +87,32 @@ export default function RootLayout({
             })
           }}
         />
+
         {children}
+
+        {/* ✅ GTM — lazyOnload = ładuje się PO load event, zero wpływu na TBT */}
+        <Script
+          id="gtm"
+          strategy="lazyOnload"
+          dangerouslySetInnerHTML={{
+            __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-K2TJZ899');`,
+          }}
+        />
+
+        {/* noscript fallback dla GTM */}
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-K2TJZ899"
+            height="0"
+            width="0"
+            style={{ display: 'none', visibility: 'hidden' }}
+          />
+        </noscript>
+
       </body>
     </html>
   );
