@@ -248,14 +248,15 @@ export default function PortfolioHome() {
             
             <Hero onNavigate={scrollToSection} />
 
-            {/* ─── Usługi ─── */}
-            <section className="w-full lg:w-1/2 min-h-screen lg:h-full flex items-center justify-center px-6 sm:px-10 lg:px-12 py-20 lg:py-0 relative overflow-hidden bg-transparent">
+       {/* ─── Usługi ─── */}
+       <section className="w-full lg:w-1/2 min-h-screen lg:h-full flex items-center justify-center px-6 sm:px-10 lg:px-12 py-20 lg:py-0 relative overflow-hidden bg-transparent">
               <div className="flex flex-col gap-8 lg:gap-10 max-w-5xl w-full relative z-10">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 w-full">
                   <MagicBento className="bg-zinc-950 border border-white/5 hover:border-orange-500/40 transition-all group">
                     <div className="flex items-center justify-between mb-6">
                       <Zap className="text-orange-500 w-5 h-5 group-hover:scale-110 transition-transform" />
-                      <span className="font-mono text-[10px] text-zinc-600">sys.module_01</span>
+                      {/* 🔥 Zmiana na text-zinc-400 dla 100/100 Accessibility */}
+                      <span className="font-mono text-[10px] text-zinc-400">sys.module_01</span>
                     </div>
                     <h2 className="font-bold text-sm lg:text-base mb-3 text-white">
                       <span className="text-orange-500 mr-2">&gt;</span>Strony WWW
@@ -268,7 +269,8 @@ export default function PortfolioHome() {
                   <MagicBento className="bg-zinc-950 border border-white/5 hover:border-orange-500/40 transition-all group">
                     <div className="flex items-center justify-between mb-6">
                       <Smartphone className="text-orange-500 w-5 h-5 group-hover:scale-110 transition-transform" />
-                      <span className="font-mono text-[10px] text-zinc-600">sys.module_02</span>
+                      {/* 🔥 Zmiana na text-zinc-400 */}
+                      <span className="font-mono text-[10px] text-zinc-400">sys.module_02</span>
                     </div>
                     <h2 className="font-bold text-sm lg:text-base mb-3 text-white">
                       <span className="text-orange-500 mr-2">&gt;</span>Aplikacje SaaS
@@ -281,7 +283,8 @@ export default function PortfolioHome() {
                   <MagicBento className="bg-zinc-950 border border-white/5 hover:border-orange-500/40 transition-all group">
                     <div className="flex items-center justify-between mb-6">
                       <Gauge className="text-orange-500 w-5 h-5 group-hover:scale-110 transition-transform" />
-                      <span className="font-mono text-[10px] text-zinc-600">sys.module_03</span>
+                      {/* 🔥 Zmiana na text-zinc-400 */}
+                      <span className="font-mono text-[10px] text-zinc-400">sys.module_03</span>
                     </div>
                     <h2 className="font-bold text-sm lg:text-base mb-3 text-white">
                       <span className="text-orange-500 mr-2">&gt;</span>Optymalizacja
@@ -294,7 +297,8 @@ export default function PortfolioHome() {
                   <MagicBento className="bg-zinc-950 border border-white/5 hover:border-orange-500/40 transition-all group">
                     <div className="flex items-center justify-between mb-6">
                       <Code2 className="text-orange-500 w-5 h-5 group-hover:scale-110 transition-transform" />
-                      <span className="font-mono text-[10px] text-zinc-600">sys.module_04</span>
+                      {/* 🔥 Zmiana na text-zinc-400 */}
+                      <span className="font-mono text-[10px] text-zinc-400">sys.module_04</span>
                     </div>
                     <h2 className="font-bold text-sm lg:text-base mb-3 text-white">
                       <span className="text-orange-500 mr-2">&gt;</span>Narzędzia B2B
@@ -315,7 +319,8 @@ export default function PortfolioHome() {
                     <div className="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
                       <Terminal size={16} className="text-orange-500" />
                     </div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Scale_Logic:</span>
+                    {/* 🔥 Zmiana na text-zinc-400 (wcześniej 500) dla pewności przejścia testu kontrastu */}
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Scale_Logic:</span>
                   </div>
                   <p className="text-[11px] lg:text-xs text-zinc-400 font-light leading-relaxed text-center sm:text-left">
                     Moje wsparcie obejmuje pełne spektrum techniczne: od <span className="text-zinc-200">mikro-optymalizacji</span> (np. szybkość obrazów, poprawa LCP) po <span className="text-zinc-200">złożone systemy dedykowane</span>. Niezależnie od skali zadania, jakość kodu pozostaje bezkompromisowa.

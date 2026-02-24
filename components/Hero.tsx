@@ -26,7 +26,7 @@ export default function Hero({ onNavigate }: HeroProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [orbitRadius, setOrbitRadius] = useState(160);
   
-  // 🔥 DODANY STAN (Rozwiązuje błąd Hydration Error)
+  // Stan rozwiązujący błąd Hydration Error
   const [isMounted, setIsMounted] = useState(false);
 
   // Współrzędne kursora
@@ -34,9 +34,8 @@ export default function Hero({ onNavigate }: HeroProps) {
   const mouseY = useMotionValue(0);
   const rotation = useMotionValue(0);
 
-  // SSR-safe check dla wymiarów i responsywności promienia
   useEffect(() => {
-    setIsMounted(true); // Ustawienie mounted na true na kliencie
+    setIsMounted(true);
 
     const handleResize = () => {
       if (window.innerWidth > 1536) setOrbitRadius(240);
@@ -65,7 +64,6 @@ export default function Hero({ onNavigate }: HeroProps) {
       onMouseMove={handleMouseMove}
       className="w-full lg:w-1/2 min-h-screen lg:h-full flex flex-col items-start justify-center relative overflow-hidden px-8 sm:px-16 lg:px-20 py-20 lg:py-0 text-left"
     >
-      {/* ─── ATMOSFERA HERO (Siatka przeniesiona globalnie do page.tsx) ─── */}
       <Particles color="#ea580c" />
       
       <motion.div
@@ -74,10 +72,7 @@ export default function Hero({ onNavigate }: HeroProps) {
         className="absolute top-1/2 left-0 -translate-y-1/2 -translate-x-1/4 w-[400px] h-[400px] lg:w-[800px] lg:h-[800px] bg-linear-to-tr from-orange-600/20 via-zinc-900 to-transparent blur-[120px] rounded-full pointer-events-none will-change-transform"
       />
 
-      {/* ─── INTERAKTYWNA ORBITA ─── */}
       <div className="absolute top-1/2 -translate-y-1/2 left-[45%] sm:left-[55%] lg:left-[55%] xl:left-[60%] w-[400px] h-[400px] lg:w-[600px] lg:h-[600px] pointer-events-none hidden md:flex items-center justify-center opacity-30 lg:opacity-100 z-0 transition-all duration-700">
-        
-        {/* Renderowanie węzłów dopiero po upewnieniu się, że klient wyrenderował DOM */}
         {isMounted && TECH_STACK.map((tech, i) => (
           <TechNode 
             key={tech.name} 
@@ -89,17 +84,13 @@ export default function Hero({ onNavigate }: HeroProps) {
             radius={orbitRadius}
           />
         ))}
-
-        {/* Środek układu */}
         <div className="absolute w-2 h-2 bg-orange-500 rounded-full shadow-[0_0_30px_5px_#ea580c] animate-pulse" />
         <div className="absolute w-[80%] h-[80%] border border-white/5 rounded-full" />
         <div className="absolute w-full h-full border border-white/2 rounded-full border-dashed animate-[spin_60s_linear_infinite]" />
       </div>
 
-      {/* ─── TREŚĆ ─── */}
       <div className="relative z-10 w-full flex flex-col items-start max-w-2xl">
         
-        {/* Minimalistyczny Status */}
         <div className="flex items-center gap-3 font-mono text-[9px] sm:text-[10px] text-zinc-500 uppercase tracking-widest mb-10">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-50"></span>
@@ -108,53 +99,46 @@ export default function Hero({ onNavigate }: HeroProps) {
           <span>system.status: high_performance_ready</span>
         </div>
 
-      {/* H1: Typing Effect */}
-      <h1 className="text-4xl sm:text-5xl md:text-6xl xl:text-[5.5rem] font-mono tracking-tighter leading-tight mb-8 text-white">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: "100%" }}
-            transition={{ duration: 0.5, ease: "easeOut" }} // 🔥 Zabrany delay, wczytuje się natychmiast
-            className="overflow-hidden whitespace-nowrap"
-          >
+        {/* 🔥 Złoty Środek Optymalizacji LCP: Animacje przeniesione z JS na natywny CSS */}
+        <style dangerouslySetInnerHTML={{__html: `
+          @keyframes type {
+            from { clip-path: inset(0 100% 0 0); }
+            to { clip-path: inset(0 0 0 0); }
+          }
+          @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          .type-1 { animation: type 0.5s ease-out 0s both; }
+          .type-2 { animation: type 0.5s ease-out 0.4s both; }
+          .type-3 { animation: type 0.5s ease-out 0.8s both; }
+          .fade-up { animation: fadeInUp 0.8s ease-out 1.2s both; }
+        `}} />
+
+        <h1 className="text-4xl sm:text-5xl md:text-6xl xl:text-[5.5rem] font-mono tracking-tighter leading-tight mb-8 text-white">
+          <div className="overflow-hidden whitespace-nowrap type-1">
             &gt; Precyzja.
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: "100%" }}
-            transition={{ duration: 0.6, ease: "easeOut", delay: 0.5 }} // 🔥 Zmniejszone opóźnienie
-            className="overflow-hidden whitespace-nowrap text-transparent bg-clip-text bg-linear-to-r from-zinc-400 via-zinc-100 to-white"
-          >
+          <div className="overflow-hidden whitespace-nowrap text-transparent bg-clip-text bg-linear-to-r from-zinc-400 via-zinc-100 to-white type-2">
             &gt; Wydajność.
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: "100%" }}
-            transition={{ duration: 0.6, ease: "easeOut", delay: 1.1 }} // 🔥 Zmniejszone opóźnienie
-            className="overflow-hidden whitespace-nowrap flex items-center"
-          >
+          <div className="overflow-hidden whitespace-nowrap flex items-center type-3">
             &gt; Rezultat.
             <motion.span
               animate={{ opacity: [1, 0, 1] }}
               transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
               className="ml-2 w-[0.4em] h-[1em] bg-orange-500 inline-block"
             />
-          </motion.div>
+          </div>
         </h1>
 
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.8, ease: 'easeOut', delay: 1.8 }} // 🔥 Przycisk pokazuje się szybciej
-          className="flex flex-col items-start w-full"
-        >
-          {/* Opis */}
+        <div className="flex flex-col items-start w-full fade-up">
           <p className="font-mono text-zinc-300 text-sm sm:text-base lg:text-lg font-light leading-relaxed mb-12 max-w-lg">
             Projektuję ekosystemy cyfrowe dla web i mobile. Odrzucam kompromisy i szablony, dostarczając kod, który <strong className="text-white font-medium">ładuje się natychmiast i pracuje na Twój wynik biznesowy.</strong>
           </p>
 
-          {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full mb-16">
             <MagneticWrapper>
               <button
@@ -178,13 +162,12 @@ export default function Hero({ onNavigate }: HeroProps) {
               </button>
             </MagneticWrapper>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
 }
 
-// ─── KOMPONENT POMOCNICZY DLA ORBITY (Trygonometria 2.5D) ───
 function TechNode({ tech, baseAngle, rotation, mouseX, mouseY, radius }: any) {
   const x = useTransform(() => {
     const angle = (baseAngle + rotation.get()) * (Math.PI / 180);
