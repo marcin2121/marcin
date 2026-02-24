@@ -3,10 +3,9 @@ import { Geist_Mono } from "next/font/google"; // ✅ Zostawiamy tylko Mono
 import "./globals.css";
 import Script from "next/script";
 
-// ✅ Konfiguracja fontu Mono - Next.js sam zajmie się optymalizacją i self-hostingiem
 const geistMono = Geist_Mono({
   subsets: ["latin"],
-  display: 'swap',
+  display: 'swap', // To powstrzymuje błąd "Eliminate render-blocking resources"
 });
 
 export const metadata: Metadata = {

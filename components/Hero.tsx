@@ -25,6 +25,9 @@ const TECH_STACK = [
 export default function Hero({ onNavigate }: HeroProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [orbitRadius, setOrbitRadius] = useState(160);
+  
+  // 🔥 DODANY STAN (Rozwiązuje błąd Hydration Error)
+  const [isMounted, setIsMounted] = useState(false);
 
   // Współrzędne kursora
   const mouseX = useMotionValue(0);
@@ -33,6 +36,8 @@ export default function Hero({ onNavigate }: HeroProps) {
 
   // SSR-safe check dla wymiarów i responsywności promienia
   useEffect(() => {
+    setIsMounted(true); // Ustawienie mounted na true na kliencie
+
     const handleResize = () => {
       if (window.innerWidth > 1536) setOrbitRadius(240);
       else if (window.innerWidth > 1024) setOrbitRadius(200);
@@ -71,7 +76,9 @@ export default function Hero({ onNavigate }: HeroProps) {
 
       {/* ─── INTERAKTYWNA ORBITA ─── */}
       <div className="absolute top-1/2 -translate-y-1/2 left-[45%] sm:left-[55%] lg:left-[55%] xl:left-[60%] w-[400px] h-[400px] lg:w-[600px] lg:h-[600px] pointer-events-none hidden md:flex items-center justify-center opacity-30 lg:opacity-100 z-0 transition-all duration-700">
-        {TECH_STACK.map((tech, i) => (
+        
+        {/* Renderowanie węzłów dopiero po upewnieniu się, że klient wyrenderował DOM */}
+        {isMounted && TECH_STACK.map((tech, i) => (
           <TechNode 
             key={tech.name} 
             tech={tech} 
@@ -82,6 +89,7 @@ export default function Hero({ onNavigate }: HeroProps) {
             radius={orbitRadius}
           />
         ))}
+
         {/* Środek układu */}
         <div className="absolute w-2 h-2 bg-orange-500 rounded-full shadow-[0_0_30px_5px_#ea580c] animate-pulse" />
         <div className="absolute w-[80%] h-[80%] border border-white/5 rounded-full" />
@@ -100,12 +108,12 @@ export default function Hero({ onNavigate }: HeroProps) {
           <span>system.status: high_performance_ready</span>
         </div>
 
-        {/* H1: Typing Effect */}
-        <h1 className="text-4xl sm:text-5xl md:text-6xl xl:text-[5.5rem] font-mono tracking-tighter leading-tight mb-8 text-white">
+      {/* H1: Typing Effect */}
+      <h1 className="text-4xl sm:text-5xl md:text-6xl xl:text-[5.5rem] font-mono tracking-tighter leading-tight mb-8 text-white">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: "100%" }}
-            transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+            transition={{ duration: 0.5, ease: "easeOut" }} // 🔥 Zabrany delay, wczytuje się natychmiast
             className="overflow-hidden whitespace-nowrap"
           >
             &gt; Precyzja.
@@ -114,7 +122,7 @@ export default function Hero({ onNavigate }: HeroProps) {
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: "100%" }}
-            transition={{ duration: 0.8, ease: "easeOut", delay: 1 }}
+            transition={{ duration: 0.6, ease: "easeOut", delay: 0.5 }} // 🔥 Zmniejszone opóźnienie
             className="overflow-hidden whitespace-nowrap text-transparent bg-clip-text bg-gradient-to-r from-zinc-400 via-zinc-100 to-white"
           >
             &gt; Wydajność.
@@ -123,7 +131,7 @@ export default function Hero({ onNavigate }: HeroProps) {
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: "100%" }}
-            transition={{ duration: 0.8, ease: "easeOut", delay: 1.8 }}
+            transition={{ duration: 0.6, ease: "easeOut", delay: 1.1 }} // 🔥 Zmniejszone opóźnienie
             className="overflow-hidden whitespace-nowrap flex items-center"
           >
             &gt; Rezultat.
@@ -138,7 +146,7 @@ export default function Hero({ onNavigate }: HeroProps) {
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.8, ease: 'easeOut', delay: 2.6 }}
+          transition={{ duration: 0.8, ease: 'easeOut', delay: 1.8 }} // 🔥 Przycisk pokazuje się szybciej
           className="flex flex-col items-start w-full"
         >
           {/* Opis */}
