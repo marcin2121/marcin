@@ -210,7 +210,7 @@ export default function PortfolioHome() {
         <div ref={horizontal1Ref} className="flex flex-col lg:flex-row w-full lg:w-[200%] h-auto lg:h-screen">
           <Hero onNavigate={scrollToSection} />
 
-          <section className="w-full lg:w-1/2 min-h-screen lg:h-full flex items-center justify-center bg-zinc-900/20 px-6 sm:px-10 lg:px-12 py-20 lg:py-0 relative overflow-hidden">
+          <section className="w-full lg:w-1/2 min-h-screen lg:h-full flex items-center justify-center bg-zinc-900 px-6 sm:px-10 lg:px-12 py-20 lg:py-0 relative overflow-hidden">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-5xl text-left w-full relative z-10">
               <MagicBento>
                 <Zap className="text-orange-400 mb-4 w-8 h-8 lg:w-10 lg:h-10" />
