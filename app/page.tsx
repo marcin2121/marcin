@@ -385,7 +385,7 @@ export default function PortfolioHome() {
                 <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse" />
                 LIVE DEPLOYMENTS
               </div>
-              <h2 className="text-5xl sm:text-7xl lg:text-8xl tracking-tighter text-white text-center">
+              <h2 className="text-4xl sm:text-5xl md:text-6xl xl:text-[5.5rem] font-mono tracking-tighter leading-tight mb-8 text-white">
                 Case<br />Studies
               </h2>
             </section>
@@ -459,9 +459,9 @@ export default function PortfolioHome() {
                   </span>
                   <span>system.status: awaiting_input</span>
                 </div>
-                <h2 className="text-4xl sm:text-5xl lg:text-6xl tracking-tighter mb-6 text-white leading-[1.1]">Czas na konkret.</h2>
+                <h2 className="text-4xl sm:text-5xl lg:text-6xl tracking-tighter mb-6 text-white">Czas na konkret.</h2>
                 <p className="text-zinc-400 mb-10 font-light leading-relaxed text-sm sm:text-base max-w-md mx-auto lg:mx-0">
-                  Żadnego lania wody. Opisz swój cel biznesowy, a ja zaprojektuję architekturę, która go zrealizuje. Bez kompromisów technologicznych.
+                Ty wyznaczasz cel biznesowy, ja projektuję architekturę, która go realizuje. Bez technologicznych kompromisów.
                 </p>
                 <a href="mailto:kontakt@molendadevelopment.pl" className="text-sm sm:text-base font-mono text-zinc-300 border-b border-white/10 pb-1 hover:text-white hover:border-orange-500 transition-colors w-fit mx-auto lg:mx-0">
                   kontakt@molendadevelopment.pl
@@ -491,11 +491,11 @@ export default function PortfolioHome() {
                     <>
                       <input type="text" name="name" placeholder="Imię / Nazwa Firmy" aria-label="Twoje Imię" required disabled={isSubmitting} className="w-full p-4 bg-zinc-900 border border-white/5 rounded-xl outline-none focus:border-white/20 text-zinc-200 text-sm font-mono transition-colors placeholder:text-zinc-600" />
                       <input type="email" name="email" placeholder="Adres e-mail" aria-label="Twój Email" required disabled={isSubmitting} className="w-full p-4 bg-zinc-900 border border-white/5 rounded-xl outline-none focus:border-white/20 text-zinc-200 text-sm font-mono transition-colors placeholder:text-zinc-600" />
-                      <textarea name="msg" placeholder="Wprowadź parametry projektu..." aria-label="Wiadomość" rows={4} required disabled={isSubmitting} className="w-full p-4 bg-zinc-900 border border-white/5 rounded-xl outline-none focus:border-white/20 text-zinc-200 text-sm font-mono resize-none transition-colors placeholder:text-zinc-600" />
+                      <textarea name="msg" placeholder="Mały problem czy wielka wizja? Zostaw szczegóły tutaj..." aria-label="Wiadomość" rows={4} required disabled={isSubmitting} className="w-full p-4 bg-zinc-900 border border-white/5 rounded-xl outline-none focus:border-white/20 text-zinc-200 text-sm font-mono resize-none transition-colors placeholder:text-zinc-600" />
                       {formError && <p className="text-red-500/80 font-mono text-[10px] px-2">error: {formError}</p>}
                       <MagneticWrapper className="w-full pt-2">
                         <button type="submit" disabled={isSubmitting} className="w-full py-5 bg-white text-black font-black uppercase text-[10px] tracking-[0.2em] rounded-xl shadow-lg hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3">
-                          {isSubmitting ? 'Przetwarzanie...' : 'Inicjuj kontakt'}
+                          {isSubmitting ? 'Przetwarzanie...' : 'Działamy'}
                           {!isSubmitting && <ArrowRight size={14} />}
                         </button>
                       </MagneticWrapper>
