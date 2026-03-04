@@ -5,6 +5,7 @@ import { motion, useAnimationFrame, useMotionValue, useTransform } from 'framer-
 import { ArrowRight, Terminal } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import MagneticWrapper from '@/components/ui/MagneticWrapper';
+import { pushGTMEvent } from '@/app/page';
 
 // 🔥 Leniwe ładowanie cząsteczek dla max wydajności
 const Particles = dynamic(() => import('@/components/ui/Particles'), { ssr: false });
@@ -25,9 +26,6 @@ const TECH_STACK = [
 export default function Hero({ onNavigate }: HeroProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [orbitRadius, setOrbitRadius] = useState(160);
-  
-  // Stan rozwiązujący błąd Hydration Error
-  const [isMounted, setIsMounted] = useState(false);
 
   // Współrzędne kursora
   const mouseX = useMotionValue(0);
@@ -35,12 +33,12 @@ export default function Hero({ onNavigate }: HeroProps) {
   const rotation = useMotionValue(0);
 
   useEffect(() => {
-    setIsMounted(true);
-
     const handleResize = () => {
-      if (window.innerWidth > 1536) setOrbitRadius(240);
-      else if (window.innerWidth > 1024) setOrbitRadius(200);
-      else setOrbitRadius(140);
+      if (typeof window !== 'undefined') {
+        if (window.innerWidth > 1536) setOrbitRadius(240);
+        else if (window.innerWidth > 1024) setOrbitRadius(200);
+        else setOrbitRadius(140);
+      }
     };
     handleResize();
     window.addEventListener('resize', handleResize);
@@ -73,7 +71,7 @@ export default function Hero({ onNavigate }: HeroProps) {
       />
 
       <div className="absolute top-1/2 -translate-y-1/2 left-[45%] sm:left-[55%] lg:left-[55%] xl:left-[60%] w-[400px] h-[400px] lg:w-[600px] lg:h-[600px] pointer-events-none hidden md:flex items-center justify-center opacity-30 lg:opacity-100 z-0 transition-all duration-700">
-        {isMounted && TECH_STACK.map((tech, i) => (
+        {TECH_STACK.map((tech, i) => (
           <TechNode 
             key={tech.name} 
             tech={tech} 
@@ -100,25 +98,45 @@ export default function Hero({ onNavigate }: HeroProps) {
         </div>
 
         <h1 className="text-4xl sm:text-5xl md:text-6xl xl:text-[5.5rem] font-mono tracking-tighter leading-tight mb-8 text-white">
-          <div className="overflow-hidden whitespace-nowrap type-1">
+          <motion.div 
+            initial={{ clipPath: "inset(0 100% 0 0)" }}
+            animate={{ clipPath: "inset(0 0 0 0)" }}
+            transition={{ duration: 0.5, ease: "easeOut", delay: 0 }}
+            className="overflow-hidden whitespace-nowrap"
+          >
             &gt; Precyzja.
-          </div>
+          </motion.div>
 
-          <div className="overflow-hidden whitespace-nowrap text-transparent bg-clip-text bg-linear-to-r from-zinc-400 via-zinc-100 to-white type-2">
+          <motion.div 
+            initial={{ clipPath: "inset(0 100% 0 0)" }}
+            animate={{ clipPath: "inset(0 0 0 0)" }}
+            transition={{ duration: 0.5, ease: "easeOut", delay: 0.4 }}
+            className="overflow-hidden whitespace-nowrap text-transparent bg-clip-text bg-linear-to-r from-zinc-400 via-zinc-100 to-white"
+          >
             &gt; Wydajność.
-          </div>
+          </motion.div>
 
-          <div className="overflow-hidden whitespace-nowrap flex items-center type-3">
+          <motion.div 
+            initial={{ clipPath: "inset(0 100% 0 0)" }}
+            animate={{ clipPath: "inset(0 0 0 0)" }}
+            transition={{ duration: 0.5, ease: "easeOut", delay: 0.8 }}
+            className="overflow-hidden whitespace-nowrap flex items-center"
+          >
             &gt; Rezultat.
             <motion.span
               animate={{ opacity: [1, 0, 1] }}
               transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
               className="ml-2 w-[0.4em] h-[1em] bg-orange-500 inline-block"
             />
-          </div>
+          </motion.div>
         </h1>
 
-        <div className="flex flex-col items-start w-full fade-up">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut", delay: 1.2 }}
+          className="flex flex-col items-start w-full"
+        >
           <p className="font-mono text-zinc-300 text-sm sm:text-base lg:text-lg font-light leading-relaxed mb-12 max-w-lg">
             Projektuję ekosystemy cyfrowe dla web i mobile. Odrzucam kompromisy i szablony, dostarczając kod, który <strong className="text-white font-medium">ładuje się natychmiast i pracuje na Twój wynik biznesowy.</strong>
           </p>
@@ -126,7 +144,10 @@ export default function Hero({ onNavigate }: HeroProps) {
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full mb-16">
             <MagneticWrapper>
               <button
-                onClick={() => onNavigate(1)}
+                onClick={() => {
+                  pushGTMEvent('strona_glowna_eksploruj_oferte_klikniecie');
+                  onNavigate(1);
+                }}
                 className="group relative px-8 py-4 bg-white text-black hover:bg-zinc-200 font-black uppercase tracking-[0.15em] text-[10px] lg:text-xs rounded-xl transition-all shadow-[0_0_30px_rgba(255,255,255,0.05)]"
               >
                 <span className="relative z-10 flex items-center gap-3">
@@ -138,7 +159,10 @@ export default function Hero({ onNavigate }: HeroProps) {
 
             <MagneticWrapper>
               <button
-                onClick={() => onNavigate(6)}
+                onClick={() => {
+                  pushGTMEvent('strona_glowna_inicjuj_kontakt_klikniecie');
+                  onNavigate(6);
+                }}
                 className="px-8 py-4 bg-zinc-950 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-500 font-black uppercase tracking-[0.15em] text-[10px] lg:text-xs rounded-xl transition-colors flex items-center gap-3"
               >
                 <Terminal size={14} className="text-orange-500" />
@@ -146,13 +170,20 @@ export default function Hero({ onNavigate }: HeroProps) {
               </button>
             </MagneticWrapper>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );
 }
 
-function TechNode({ tech, baseAngle, rotation, mouseX, mouseY, radius }: any) {
+function TechNode({ tech, baseAngle, rotation, mouseX, mouseY, radius }: {
+  tech: { name: string, color: string },
+  baseAngle: number,
+  rotation: import('framer-motion').MotionValue<number>,
+  mouseX: import('framer-motion').MotionValue<number>,
+  mouseY: import('framer-motion').MotionValue<number>,
+  radius: number
+}) {
   const x = useTransform(() => {
     const angle = (baseAngle + rotation.get()) * (Math.PI / 180);
     return Math.cos(angle) * radius + (mouseX.get() * 20);

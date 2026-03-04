@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'Marcin Molenda | Strony i Aplikacje Web & Mobile',
-    description: 'Dedykowane strony i aplikacje webowe w Next.js 16. Szybkość ładowania < 1s, Lighthouse 100. Obsługa firm z całej Polski.',
+    description: 'Dedykowane strony i aplikacje webowe w Next.js 16. Szybkość ładowania < 1s. Obsługa firm z całej Polski.',
     url: 'https://molendadevelopment.pl',
     siteName: 'Marcin Molenda Portfolio',
     locale: 'pl_PL',
@@ -59,7 +59,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="pl">
       {/* ✅ Zastosowanie fontu Mono na całym body */}
-      <body className={`${geistMono.className} bg-zinc-950 text-zinc-50 antialiased overflow-x-hidden selection:bg-orange-500/30 selection:text-orange-200`}>
+      <body suppressHydrationWarning className={`${geistMono.className} bg-zinc-950 text-zinc-50 antialiased overflow-x-hidden selection:bg-orange-500/30 selection:text-orange-200`}>
          {/* ✅ GTM — lazyOnload dla zachowania 100/100 Performance */}
          <Script
           id="gtm"

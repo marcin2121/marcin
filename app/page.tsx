@@ -45,7 +45,7 @@ const NAV_DOTS = [
   { id: 6, title: 'Kontakt' },
 ] as const;
 
-const pushGTMEvent = (eventName: string, params: Record<string, unknown> = {}) => {
+export const pushGTMEvent = (eventName: string, params: Record<string, unknown> = {}) => {
   if (typeof window !== 'undefined') {
     const w = window as unknown as { dataLayer: Record<string, unknown>[] };
     w.dataLayer = w.dataLayer || [];
@@ -163,7 +163,7 @@ export default function PortfolioHome() {
     try {
       const response = await fetch('https://formspree.io/f/mgolplyg', { method: 'POST', body: formData, headers: { Accept: 'application/json' } });
       if (response.ok) {
-        pushGTMEvent('wyslanie_formularza_kontakt');
+        pushGTMEvent('formularz_kontaktowy_wyslany');
         setIsFormSubmitted(true);
         setFormError('');
         form.reset();
@@ -262,9 +262,9 @@ export default function PortfolioHome() {
                       {/* 🔥 Zmiana na text-zinc-400 dla 100/100 Accessibility */}
                       <span className="font-mono text-[10px] text-zinc-400">sys.module_01</span>
                     </div>
-                    <h2 className="font-bold text-sm lg:text-base mb-3 text-white">
+                    <h3 className="font-bold text-sm lg:text-base mb-3 text-white">
                       <span className="text-orange-500 mr-2">&gt;</span>Strony WWW
-                    </h2>
+                    </h3>
                     <p className="text-xs text-zinc-300 font-light leading-relaxed">
                       Architektura oparta o Next.js. Natychmiastowe ładowanie, przewaga w wynikach wyszukiwania i bezbłędny UX.
                     </p>
@@ -276,9 +276,9 @@ export default function PortfolioHome() {
                       {/* 🔥 Zmiana na text-zinc-400 */}
                       <span className="font-mono text-[10px] text-zinc-400">sys.module_02</span>
                     </div>
-                    <h2 className="font-bold text-sm lg:text-base mb-3 text-white">
+                    <h3 className="font-bold text-sm lg:text-base mb-3 text-white">
                       <span className="text-orange-500 mr-2">&gt;</span>Aplikacje SaaS
-                    </h2>
+                    </h3>
                     <p className="text-xs text-zinc-300 font-light leading-relaxed">
                       Systemy klasy Enterprise. Relacyjne bazy danych, bezpieczna autoryzacja i skomplikowane procesy w czystym UI.
                     </p>
@@ -290,9 +290,9 @@ export default function PortfolioHome() {
                       {/* 🔥 Zmiana na text-zinc-400 */}
                       <span className="font-mono text-[10px] text-zinc-400">sys.module_03</span>
                     </div>
-                    <h2 className="font-bold text-sm lg:text-base mb-3 text-white">
+                    <h3 className="font-bold text-sm lg:text-base mb-3 text-white">
                       <span className="text-orange-500 mr-2">&gt;</span>Optymalizacja
-                    </h2>
+                    </h3>
                     <p className="text-xs text-zinc-300 font-light leading-relaxed">
                       Głęboka refaktoryzacja kodu, redukcja długu technologicznego i optymalizacja pod najwyższe standardy Core Web Vitals.
                     </p>
@@ -304,9 +304,9 @@ export default function PortfolioHome() {
                       {/* 🔥 Zmiana na text-zinc-400 */}
                       <span className="font-mono text-[10px] text-zinc-400">sys.module_04</span>
                     </div>
-                    <h2 className="font-bold text-sm lg:text-base mb-3 text-white">
+                    <h3 className="font-bold text-sm lg:text-base mb-3 text-white">
                       <span className="text-orange-500 mr-2">&gt;</span>Narzędzia B2B
-                    </h2>
+                    </h3>
                     <p className="text-xs text-zinc-300 font-light leading-relaxed">
                       Dedykowane algorytmy, inteligentne konfiguratory ofert i kalkulatory zamieniające ruch w wartościowe zapytania.
                     </p>
@@ -400,21 +400,27 @@ export default function PortfolioHome() {
                 <div className="space-y-6 text-center lg:text-left order-2 lg:order-1 relative z-10">
                   <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-900 border border-white/5 rounded-md mx-auto lg:mx-0">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                    <span className="font-mono text-[9px] text-zinc-300 uppercase tracking-widest">E-commerce / PWA</span>
+                    <span className="font-mono text-[9px] text-zinc-300 uppercase tracking-widest">Grywalizacja / PWA</span>
                   </div>
-                  <h3 className="text-4xl sm:text-6xl text-white tracking-tighter">Sklep Urwis</h3>
-                  <p className="text-zinc-400 text-sm sm:text-base font-light leading-relaxed">Wydajna platforma sprzedażowa z kreatorem rysowania na żywo i systemem lojalnościowym. Supabase na backendzie.</p>
+                  <h2 className="text-4xl sm:text-6xl text-white tracking-tighter">Sklep Urwis</h2>
+                  <p className="text-zinc-400 text-sm sm:text-base font-light leading-relaxed">Interaktywna platforma rozrywkowa. Każdy element – od wciągającej Strefy Zabawy i autorskich gier (np. Bubble Shooter), przez system kodów rabatowych – to dedykowane rozwiązanie szyte na miarę. Zaprojektowałem tu również zupełnie nowy kierunek graficzny marki, którego sercem jest pełna wesołego charakteru maskotka w 3D, potęgująca immersję i otwierająca marce nowe ścieżki marketingowe w jej docelowej branży.</p>
                   <div className="flex justify-center lg:justify-start pt-4">
                     <MagneticWrapper>
-                      <button onClick={() => handleOpenDemo({ url: 'https://sklep-urwis.pl', title: 'sklep-urwis.pl', colorClass: 'text-orange-500', bgClass: 'bg-orange-800' })} className="px-8 py-4 bg-orange-800 text-white font-mono uppercase text-[10px] lg:text-xs tracking-widest rounded-lg shadow-lg hover:bg-orange-700 transition-colors flex items-center gap-3">
+                      <button onClick={() => {
+                        pushGTMEvent('portfolio_uruchomiono_demo', { projekt: 'Sklep Urwis' });
+                        handleOpenDemo({ url: 'https://sklep-urwis.pl', title: 'sklep-urwis.pl', colorClass: 'text-orange-500', bgClass: 'bg-orange-800' });
+                      }} className="px-8 py-4 bg-orange-800 text-white font-mono uppercase text-[10px] lg:text-xs tracking-widest rounded-lg shadow-lg hover:bg-orange-700 transition-colors flex items-center gap-3">
                         <Terminal size={14} />
                         <span>Init Demo</span>
                       </button>
                     </MagneticWrapper>
                   </div>
                 </div>
-                <div onClick={() => handleOpenDemo({ url: 'https://sklep-urwis.pl', title: 'sklep-urwis.pl', colorClass: 'text-orange-500', bgClass: 'bg-orange-800' })} className="aspect-4/3 w-full bg-zinc-900 rounded-2xl border border-white/10 overflow-hidden relative group shadow-2xl cursor-pointer order-1 lg:order-2">
-                  <Image src="/sklepurwis.webp" alt="Sklep Urwis" fill sizes="(max-width: 1024px) 100vw, 33vw" className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
+                <div onClick={() => {
+                  pushGTMEvent('portfolio_obraz_uruchomiono_demo', { projekt: 'Sklep Urwis' });
+                  handleOpenDemo({ url: 'https://sklep-urwis.pl', title: 'sklep-urwis.pl', colorClass: 'text-orange-500', bgClass: 'bg-orange-800' });
+                }} className="aspect-4/3 w-full bg-zinc-900 rounded-2xl border border-white/10 overflow-hidden relative group shadow-2xl cursor-pointer order-1 lg:order-2">
+                  <Image src="/sklepurwis.webp" alt="Podgląd aplikacji Sklep Urwis - E-commerce i Grywalizacja" fill priority sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
                   <div className="absolute inset-0 bg-zinc-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <span className="text-white font-mono font-bold text-[10px] uppercase tracking-widest bg-orange-800 px-6 py-3 rounded-lg shadow-2xl">Execute</span>
                   </div>
@@ -430,19 +436,25 @@ export default function PortfolioHome() {
                     <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
                     <span className="font-mono text-[9px] text-zinc-300 uppercase tracking-widest">SaaS / Fintech</span>
                   </div>
-                  <h3 className="text-4xl sm:text-6xl text-white tracking-tighter">zamowtu.pl</h3>
+                  <h2 className="text-4xl sm:text-6xl text-white tracking-tighter">zamowtu.pl</h2>
                   <p className="text-zinc-400 text-sm sm:text-base font-light leading-relaxed">System zamówień online dla gastronomii. Pełna automatyzacja sprzedaży bez prowizji pośredników.</p>
                   <div className="flex justify-center lg:justify-start pt-4">
                     <MagneticWrapper>
-                      <button onClick={() => handleOpenDemo({ url: 'https://zamówtu.pl/demo', title: 'zamowtu.pl', colorClass: 'text-orange-500', bgClass: 'bg-orange-800' })} className="px-8 py-4 bg-orange-800 text-white font-mono uppercase text-[10px] lg:text-xs tracking-widest rounded-lg shadow-lg hover:bg-orange-700 transition-colors flex items-center gap-3">
+                      <button onClick={() => {
+                        pushGTMEvent('portfolio_uruchomiono_demo', { projekt: 'zamowtu.pl' });
+                        handleOpenDemo({ url: 'https://zamówtu.pl/demo', title: 'zamowtu.pl', colorClass: 'text-orange-500', bgClass: 'bg-orange-800' });
+                      }} className="px-8 py-4 bg-orange-800 text-white font-mono uppercase text-[10px] lg:text-xs tracking-widest rounded-lg shadow-lg hover:bg-orange-700 transition-colors flex items-center gap-3">
                         <Terminal size={14} />
                         <span>Init Demo</span>
                       </button>
                     </MagneticWrapper>
                   </div>
                 </div>
-                <div onClick={() => handleOpenDemo({ url: 'https://zamówtu.pl/demo', title: 'zamowtu.pl', colorClass: 'text-orange-500', bgClass: 'bg-orange-800' })} className="aspect-4/3 w-full bg-zinc-900 rounded-2xl border border-white/10 overflow-hidden relative group shadow-2xl cursor-pointer order-1 lg:order-2">
-                  <Image src="/zamowtu.webp" alt="Zamowtu" fill sizes="(max-width: 1024px) 100vw, 33vw" className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
+                <div onClick={() => {
+                  pushGTMEvent('portfolio_obraz_uruchomiono_demo', { projekt: 'zamowtu.pl' });
+                  handleOpenDemo({ url: 'https://zamówtu.pl/demo', title: 'zamowtu.pl', colorClass: 'text-orange-500', bgClass: 'bg-orange-800' });
+                }} className="aspect-4/3 w-full bg-zinc-900 rounded-2xl border border-white/10 overflow-hidden relative group shadow-2xl cursor-pointer order-1 lg:order-2">
+                  <Image src="/zamowtu.webp" alt="Podgląd systemu zamówień Zamowtu" fill priority sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
                   <div className="absolute inset-0 bg-zinc-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <span className="text-white font-mono font-bold text-[10px] uppercase tracking-widest bg-orange-800 px-6 py-3 rounded-lg shadow-2xl">Execute</span>
                   </div>
@@ -471,10 +483,10 @@ export default function PortfolioHome() {
                   kontakt@molendadevelopment.pl
                 </a>
                 <div className="flex justify-center lg:justify-start gap-4 mt-12">
-                  <a href="https://www.facebook.com/profile.php?id=61564367727437" target="_blank" rel="noopener noreferrer" aria-label="Facebook" onClick={() => pushGTMEvent('klikniecie_socialF', { platforma: 'Facebook' })} className="p-3 bg-zinc-900 rounded-xl border border-white/5 hover:border-zinc-500 transition-all group">
+                  <a href="https://www.facebook.com/profile.php?id=61564367727437" target="_blank" rel="noopener noreferrer" aria-label="Profil Marcin Molenda Development na Facebooku" onClick={() => pushGTMEvent('klikniecie_socialF', { platforma: 'Facebook' })} className="p-3 bg-zinc-900 rounded-xl border border-white/5 hover:border-zinc-500 transition-all group">
                     <Facebook className="w-4 h-4 text-zinc-500 group-hover:text-white" />
                   </a>
-                  <a href="https://www.linkedin.com/in/marcin-molenda-447251289/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" onClick={() => pushGTMEvent('klikniecie_socialL', { platforma: 'LinkedIn' })} className="p-3 bg-zinc-900 rounded-xl border border-white/5 hover:border-zinc-500 transition-all group">
+                  <a href="https://www.linkedin.com/in/marcin-molenda-447251289/" target="_blank" rel="noopener noreferrer" aria-label="Profil Marcin Molenda na LinkedIn" onClick={() => pushGTMEvent('klikniecie_socialL', { platforma: 'LinkedIn' })} className="p-3 bg-zinc-900 rounded-xl border border-white/5 hover:border-zinc-500 transition-all group">
                     <Linkedin className="w-4 h-4 text-zinc-500 group-hover:text-white" />
                   </a>
                 </div>
