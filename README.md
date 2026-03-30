@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <p align="center">
   <img src="public/og-image.jpg" alt="Marcin Molenda Development – Portfolio" width="100%" />
 </p>
@@ -17,9 +16,7 @@
   <img src="https://img.shields.io/badge/TypeScript-5-3178c6?style=for-the-badge&logo=typescript" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Three.js-r183-black?style=for-the-badge&logo=three.js" alt="Three.js" />
 </p>
-=======
-# 🚀 Marcin Molenda - Portfolio 2026
->>>>>>> 54f4d7487dab171ffcad615d84c590efd8710c82
+
 
 ---
 
