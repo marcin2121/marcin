@@ -3,18 +3,19 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion';
 import { Code2, Smartphone, Zap, Gauge, ArrowRight, Facebook, Linkedin, Monitor, Smartphone as PhoneIcon, X, Terminal } from 'lucide-react';
-import useSound from 'use-sound';
 import MagicBento from '@/components/ui/MagicBento';
 import Hero from '@/components/Hero';
 import MagneticWrapper from '@/components/ui/MagneticWrapper';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
+import AnimatedWebP from '@/components/ui/AnimatedWebP';
 import Link from 'next/link';
 
-// ✅ Particles ładowane dynamicznie dla Performance 100
+// Dynamically loaded to avoid blocking initial paint
 const Particles = dynamic(() => import('@/components/ui/Particles'), { ssr: false });
 const UrwisModel = dynamic(() => import('@/components/UrwisModel'), { ssr: false });
 
+/** Defers non-critical work to idle browser frames with setTimeout fallback */
 const rIC = (cb: IdleRequestCallback): number => {
   if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
     return window.requestIdleCallback(cb);
@@ -22,6 +23,7 @@ const rIC = (cb: IdleRequestCallback): number => {
   return setTimeout(() => cb({ didTimeout: false, timeRemaining: () => 50 }), 50) as unknown as number;
 };
 
+/** Cancels a previously scheduled idle callback */
 const cIC = (id: number): void => {
   if (typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
     window.cancelIdleCallback(id);
@@ -44,9 +46,13 @@ const NAV_DOTS = [
   { id: 3, title: 'Portfolio' },
   { id: 4, title: 'Sklep Urwis' },
   { id: 5, title: 'zamowtu.pl' },
-  { id: 6, title: 'Kontakt' },
+  { id: 6, title: 'Zielnik' },
+  { id: 7, title: 'MDK' },
+  { id: 8, title: 'Opal' },
+  { id: 9, title: 'Kontakt' },
 ] as const;
 
+/** Pushes custom events to GTM dataLayer for analytics tracking */
 export const pushGTMEvent = (eventName: string, params: Record<string, unknown> = {}) => {
   if (typeof window !== 'undefined') {
     const w = window as unknown as { dataLayer: Record<string, unknown>[] };
@@ -71,7 +77,17 @@ export default function PortfolioHome() {
   const [formError, setFormError]         = useState('');
   const [isSubmitting, setIsSubmitting]   = useState(false);
 
-  const [playNavClick] = useSound('/sfx/click.mp3', { volume: 0.1 });
+  // Lazy-load sound on first interaction to avoid Howler.js in initial bundle
+  const playRef = useRef<(() => void) | null>(null);
+  const playNavClick = useCallback(() => {
+    if (playRef.current) { playRef.current(); return; }
+    import('use-sound').then(({ default: useSoundFactory }) => {
+      const audio = new Audio('/sfx/click.mp3');
+      audio.volume = 0.1;
+      audio.play().catch(() => {});
+      playRef.current = () => { const a = new Audio('/sfx/click.mp3'); a.volume = 0.1; a.play().catch(() => {}); };
+    }).catch(() => {});
+  }, []);
 
   const rawProgress   = useMotionValue(0);
   const smoothProgress = useSpring(rawProgress, { stiffness: 80, damping: 18, mass: 0.8 });
@@ -97,7 +113,7 @@ export default function PortfolioHome() {
         const mm = gsap.matchMedia();
         mm.add('(min-width: 1024px)', () => {
           gsap.to(horizontal1Ref.current, { xPercent: -50, ease: 'none', scrollTrigger: { trigger: horizontal1Ref.current, start: 'top top', end: '+=100%', pin: true, scrub: true } });
-          gsap.to(horizontal2Ref.current, { xPercent: -66.66, ease: 'none', scrollTrigger: { trigger: horizontal2Ref.current, start: 'top top', end: '+=200%', pin: true, scrub: true } });
+          gsap.to(horizontal2Ref.current, { xPercent: -83.33, ease: 'none', scrollTrigger: { trigger: horizontal2Ref.current, start: 'top top', end: '+=500%', pin: true, scrub: true } });
         });
 
         ScrollTrigger.create({
@@ -115,10 +131,10 @@ export default function PortfolioHome() {
             ease: 'power1.out',
           },
           onUpdate: (self) => {
-            rawProgress.set(self.progress); // ✅ OK — motion value, bez re-renderu
+            rawProgress.set(self.progress); // MotionValue update — no React re-render
             setActiveDot(prev => {
               const next = Math.round(self.progress * (NAV_DOTS.length - 1));
-              return prev !== next ? next : prev; // re-render tylko przy zmianie kropki
+              return prev !== next ? next : prev; // Only re-render on actual dot change
             });
           },
         });
@@ -175,14 +191,14 @@ export default function PortfolioHome() {
 
   return (
     <>
-      {/* 🔥 GLOBALNA SIATKA INŻYNIERYJNA */}
+      {/* Global engineering grid background */}
       <div className="fixed inset-0 z-[-1] bg-zinc-950 pointer-events-none">
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-size-[40px_40px] mask-[radial-gradient(ellipse_80%_80%_at_0%_50%,#000_30%,transparent_100%)] opacity-80 pointer-events-none" />
       </div>
 
       <div ref={containerRef} className="relative text-zinc-50 font-sans selection:bg-orange-500 selection:text-white">
         
-        {/* ─── Sidebar ─── */}
+        {/* Sidebar navigation with lava progress bar */}
         <nav className="hidden lg:flex fixed left-0 top-0 bottom-0 w-24 bg-zinc-950 border-r border-white/5 z-50 flex-col items-center justify-center">
           <div className="absolute top-10 w-full text-center text-[8px] font-black uppercase tracking-widest text-zinc-400 italic px-2 leading-tight">
             Marcin Molenda<br />Development
@@ -261,7 +277,6 @@ export default function PortfolioHome() {
                   <MagicBento className="bg-zinc-950 border border-white/5 hover:border-orange-500/40 transition-all group">
                     <div className="flex items-center justify-between mb-6">
                       <Zap className="text-orange-500 w-5 h-5 group-hover:scale-110 transition-transform" />
-                      {/* 🔥 Zmiana na text-zinc-400 dla 100/100 Accessibility */}
                       <span className="font-mono text-[10px] text-zinc-400">sys.module_01</span>
                     </div>
                     <h3 className="font-bold text-sm lg:text-base mb-3 text-white">
@@ -275,7 +290,6 @@ export default function PortfolioHome() {
                   <MagicBento className="bg-zinc-950 border border-white/5 hover:border-orange-500/40 transition-all group">
                     <div className="flex items-center justify-between mb-6">
                       <Smartphone className="text-orange-500 w-5 h-5 group-hover:scale-110 transition-transform" />
-                      {/* 🔥 Zmiana na text-zinc-400 */}
                       <span className="font-mono text-[10px] text-zinc-400">sys.module_02</span>
                     </div>
                     <h3 className="font-bold text-sm lg:text-base mb-3 text-white">
@@ -289,7 +303,6 @@ export default function PortfolioHome() {
                   <MagicBento className="bg-zinc-950 border border-white/5 hover:border-orange-500/40 transition-all group">
                     <div className="flex items-center justify-between mb-6">
                       <Gauge className="text-orange-500 w-5 h-5 group-hover:scale-110 transition-transform" />
-                      {/* 🔥 Zmiana na text-zinc-400 */}
                       <span className="font-mono text-[10px] text-zinc-400">sys.module_03</span>
                     </div>
                     <h3 className="font-bold text-sm lg:text-base mb-3 text-white">
@@ -303,7 +316,6 @@ export default function PortfolioHome() {
                   <MagicBento className="bg-zinc-950 border border-white/5 hover:border-orange-500/40 transition-all group">
                     <div className="flex items-center justify-between mb-6">
                       <Code2 className="text-orange-500 w-5 h-5 group-hover:scale-110 transition-transform" />
-                      {/* 🔥 Zmiana na text-zinc-400 */}
                       <span className="font-mono text-[10px] text-zinc-400">sys.module_04</span>
                     </div>
                     <h3 className="font-bold text-sm lg:text-base mb-3 text-white">
@@ -325,7 +337,6 @@ export default function PortfolioHome() {
                     <div className="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
                       <Terminal size={16} className="text-orange-500" />
                     </div>
-                    {/* 🔥 Zmiana na text-zinc-400 (wcześniej 500) dla pewności przejścia testu kontrastu */}
                     <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Scale_Logic:</span>
                   </div>
                   <p className="text-[11px] lg:text-xs text-zinc-400 font-light leading-relaxed text-center sm:text-left">
@@ -348,7 +359,7 @@ export default function PortfolioHome() {
                 <span className="text-orange-500">~/marcin-molenda</span>
                 <span className="text-zinc-400">/</span>
                 <Terminal size={12} className="text-zinc-400" />
-                <span className="text-zinc-400">whoami --full</span> {/* 🔥 Dodany kolor do span */}
+                <span className="text-zinc-400">whoami --full</span>
               </div>
               
               <h2 className="text-4xl sm:text-6xl lg:text-7xl xl:text-[5.5rem] mb-10 tracking-tighter text-white leading-[0.9] max-w-3xl">
@@ -359,7 +370,6 @@ export default function PortfolioHome() {
                 <p className="text-sm sm:text-lg lg:text-xl text-zinc-300 font-light leading-relaxed">
                   Odrzucam gotowe szablony i ociężałe kreatory. Każdy projekt traktuję jak <span className="text-white font-medium">system krytyczny</span>, projektując logikę dopasowaną do realnych wyzwań Twojego biznesu.
                 </p>
-                {/* 🔥 Zmiana text-zinc-500 na text-zinc-400 */}
                 <p className="text-xs sm:text-base text-zinc-400 font-light leading-relaxed">
                   Moja rola zaczyna się tam, gdzie liczy się precyzja: od wdrażania <span className="text-orange-500">mikrousług</span>, po pełną <span className="text-orange-500">architekturę systemów SaaS</span>. Dostarczam technologię, która nie zna pojęcia kompromisu i skaluje się wraz z Twoim sukcesem.
                 </p>
@@ -368,12 +378,10 @@ export default function PortfolioHome() {
               <div className="mt-16 flex flex-col items-center gap-8">
                 <div className="flex items-center gap-4">
                   <div className="w-8 h-px bg-zinc-800" />
-                  {/* 🔥 Zmiana text-zinc-600 na text-zinc-400 */}
                   <span className="font-mono text-[9px] text-zinc-400 uppercase tracking-[0.4em]">Ready for execution</span>
                   <div className="w-8 h-px bg-zinc-800" />
                 </div>
                 
-                {/* 🔥 Usunięto opacity-40, użyto text-orange-700 by było ciemniejsze bez psucia kontrastu przezroczystością */}
                 <div className="flex flex-col items-center gap-3 animate-bounce">
                   <span className="font-mono text-[9px] uppercase tracking-widest text-orange-600">Scroll.init()</span>
                   <ArrowRight className="w-4 h-4 rotate-90 text-orange-600" />
@@ -382,10 +390,10 @@ export default function PortfolioHome() {
             </div>
           </section>
 
-          <div ref={horizontal2Ref} className="flex flex-col lg:flex-row w-full lg:w-[300%] h-auto lg:h-screen bg-transparent">
+          <div ref={horizontal2Ref} className="flex flex-col lg:flex-row w-full lg:w-[600%] h-auto lg:h-screen bg-transparent">
             
             {/* Portfolio Intro */}
-            <section className="w-full lg:w-1/3 min-h-[50vh] lg:h-full flex flex-col items-center justify-center bg-transparent relative overflow-hidden py-20 lg:py-0 border-y lg:border-none border-white/5">
+            <section className="w-full lg:w-1/6 min-h-[50vh] lg:h-full flex flex-col items-center justify-center bg-transparent relative overflow-hidden py-20 lg:py-0 border-y lg:border-none border-white/5">
               <div className="absolute -top-40 -left-40 w-[300px] h-[300px] lg:w-[500px] lg:h-[500px] bg-orange-900/10 blur-[120px] rounded-full pointer-events-none" />
               <div className="font-mono text-[10px] text-orange-500 mb-4 flex items-center gap-2">
                 <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse" />
@@ -397,7 +405,7 @@ export default function PortfolioHome() {
             </section>
 
             {/* Sklep Urwis */}
-            <section className="w-full lg:w-1/3 min-h-screen lg:h-full flex items-center justify-center bg-transparent lg:border-l border-white/5 px-6 lg:px-20 py-20 lg:py-0">
+            <section className="w-full lg:w-1/6 min-h-screen lg:h-full flex items-center justify-center bg-transparent lg:border-l border-white/5 px-6 lg:px-20 py-20 lg:py-0">
               <div className="flex flex-col lg:grid lg:grid-cols-2 gap-10 lg:gap-16 items-center w-full">
                 <div className="space-y-6 text-center lg:text-left order-2 lg:order-1 relative z-10">
                   <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-900 border border-white/5 rounded-md mx-auto lg:mx-0">
@@ -406,8 +414,8 @@ export default function PortfolioHome() {
                   </div>
                   <h2 className="text-4xl sm:text-6xl text-white tracking-tighter">Sklep Urwis</h2>
                   <div className="space-y-4 text-zinc-400 text-sm sm:text-base font-light leading-relaxed">
-                    <p>Zaawansowana platforma PWA łącząca e-commerce z potężnym systemem grywalizacji, wyciskająca absolutne maksimum możliwości z nowoczesnych technologii webowych. Centralnym punktem doświadczenia użytkownika jest inteligentny chatbot AI wcielający się w rolę wygenerowanej przeze mnie maskotki w 3D, który z pełną bazą wiedzy o asortymencie precyzyjnie nawiguje klientów po podstronach.</p>
-                    <p>W Strefie Zabawy wdrożyłem od zera szereg zaawansowanych mechanik: autorski program graficzny do obszernych kolorowanek (online i do druku), gry logiczno-zręcznościowe (strzelanie do kulek, układanie drewnianych bloków na planszy) w oparciu o globalne rankingi, system wirtualnej opieki nad maskotką oraz Koło Fortuny posiadające własny panel dla admina do płynnego zarządzania nagrodami i algorytmem szans. Całości dopełniają autonomiczne kupony rabatowe działające poza bazą produktów (połączone z terminalem w sklepie stacjonarnym) oraz wysoce spersonalizowane w duchu marki, autorskie okna cookies, zaawansowany proces instalacji bogatego w funkcje PWA czy system powiadomień Push.</p>
+                    <p>Zaawansowana platforma PWA łącząca e-commerce z potężnym systemem grywalizacji (HTML5 Games). Centralnym punktem doświadczenia użytkownika jest inteligentny chatbot AI ("Wirtualny Urwis") oparty na modelach Gemini, który precyzyjnie nawiguje klientów po asortymencie i strefie zabawy.</p>
+                    <p>W Strefie Zabawy wdrożyłem szereg autorskich mechanik: od edytora kolorowanek online, przez gry logiczno-zręcznościowe z globalnymi rankingami, po system WebAR z projekcją 3D maskotki sklepu. Całość dopełnia zaawansowana obsługa Offline Mode (Serwist), synchronizacja w tle i system powiadomień Push, tworząc unikalny ekosystem "Phygital".</p>
                   </div>
                   <div className="flex justify-center lg:justify-start pt-4">
                     <MagneticWrapper>
@@ -423,7 +431,7 @@ export default function PortfolioHome() {
                 </div>
                 <div className="aspect-4/3 w-full bg-zinc-950/40 rounded-2xl border border-white/10 overflow-hidden relative group shadow-2xl order-1 lg:order-2">
                   <UrwisModel />
-                  {/* pointer-events-none pozwala na przeciąganie modelu pod spodem na hoverze */}
+                  {/* Overlay — pointer-events-none allows dragging the 3D model underneath */}
                   <div className="absolute inset-0 bg-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-end justify-between p-4 pointer-events-none">
                     <button 
                       onClick={() => {
@@ -445,7 +453,7 @@ export default function PortfolioHome() {
             </section>
 
             {/* zamowtu.pl */}
-            <section className="w-full lg:w-1/3 min-h-screen lg:h-full flex items-center justify-center bg-transparent lg:border-l border-white/5 px-6 lg:px-20 py-20 lg:py-0 border-t lg:border-none">
+            <section className="w-full lg:w-1/6 min-h-screen lg:h-full flex items-center justify-center bg-transparent lg:border-l border-white/5 px-6 lg:px-20 py-20 lg:py-0 border-t lg:border-none">
               <div className="flex flex-col lg:grid lg:grid-cols-2 gap-10 lg:gap-16 items-center w-full">
                 <div className="space-y-6 text-center lg:text-left order-2 lg:order-1 relative z-10">
                   <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-900 border border-white/5 rounded-md mx-auto lg:mx-0">
@@ -474,6 +482,57 @@ export default function PortfolioHome() {
                   <div className="absolute inset-0 bg-zinc-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <span className="text-white font-mono font-bold text-[10px] uppercase tracking-widest bg-orange-800 px-6 py-3 rounded-lg shadow-2xl">Execute</span>
                   </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Zielnik */}
+            <section className="w-full lg:w-1/6 min-h-screen lg:h-full flex items-center justify-center bg-transparent lg:border-l border-white/5 px-6 lg:px-20 py-20 lg:py-0 border-t lg:border-none">
+              <div className="flex flex-col lg:grid lg:grid-cols-2 gap-10 lg:gap-16 items-center w-full">
+                <div className="space-y-6 text-center lg:text-left order-2 lg:order-1 relative z-10">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-900 border border-white/5 rounded-md mx-auto lg:mx-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                    <span className="font-mono text-[9px] text-zinc-300 uppercase tracking-widest">E-commerce / GreenTech</span>
+                  </div>
+                  <h2 className="text-4xl sm:text-6xl text-white tracking-tighter">Zielnik</h2>
+                  <p className="text-zinc-400 text-sm sm:text-base font-light leading-relaxed">Zaawansowana aplikacja terenowa PWA dla pasjonatów przyrody, łącząca Google Gemini AI z precyzyjną kartografią Mazowsza. System wykorzystuje model Gemini Flash-Lite do inteligentnego skanowania roślin oraz interaktywnego czatu botanicznego w czasie rzeczywistym. Wdrożyłem unikalną mechanikę &quot;Mgły Wojny&quot; (Fog of War) na mapie, system grywalizacji odkryć oraz pełną obsługę Offline First z synchronizacją danych przez Supabase, tworząc elitarne narzędzie do cyfrowej dokumentacji flory.</p>
+                </div>
+                <div className="aspect-4/3 w-full bg-zinc-900 rounded-2xl border border-white/10 overflow-hidden relative group shadow-2xl order-1 lg:order-2">
+                  <AnimatedWebP src="/zielnik.webp" alt="Animacja projektu Zielnik" className="opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
+                </div>
+              </div>
+            </section>
+
+            {/* MDK */}
+            <section className="w-full lg:w-1/6 min-h-screen lg:h-full flex items-center justify-center bg-transparent lg:border-l border-white/5 px-6 lg:px-20 py-20 lg:py-0 border-t lg:border-none">
+              <div className="flex flex-col lg:grid lg:grid-cols-2 gap-10 lg:gap-16 items-center w-full">
+                <div className="space-y-6 text-center lg:text-left order-2 lg:order-1 relative z-10">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-900 border border-white/5 rounded-md mx-auto lg:mx-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                    <span className="font-mono text-[9px] text-zinc-300 uppercase tracking-widest">DevTools / Boilerplate</span>
+                  </div>
+                  <h2 className="text-4xl sm:text-6xl text-white tracking-tighter">MDK</h2>
+                  <p className="text-zinc-400 text-sm sm:text-base font-light leading-relaxed">Marcin Development Kit to autorski ekosystem narzędziowy typu &quot;Premium Boilerplate&quot;, zaprojektowany do błyskawicznego wdrażania zaawansowanych aplikacji SaaS i e-commerce. MDK integruje autorskie systemy automatyzacji ról, zaawansowaną architekturę baz danych oraz gotowe moduły AI (MDK Brain). Jest to fundament moich wdrożeń klasy Enterprise, optymalizujący time-to-market przy zachowaniu najwyższej jakości inżynieryjnej i bezpieczeństwa.</p>
+                </div>
+                <div className="aspect-4/3 w-full bg-zinc-900 rounded-2xl border border-white/10 overflow-hidden relative group shadow-2xl order-1 lg:order-2">
+                  <AnimatedWebP src="/MDK.webp" alt="Animacja projektu MDK" className="opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
+                </div>
+              </div>
+            </section>
+
+            {/* Opal */}
+            <section className="w-full lg:w-1/6 min-h-screen lg:h-full flex items-center justify-center bg-transparent lg:border-l border-white/5 px-6 lg:px-20 py-20 lg:py-0 border-t lg:border-none">
+              <div className="flex flex-col lg:grid lg:grid-cols-2 gap-10 lg:gap-16 items-center w-full">
+                <div className="space-y-6 text-center lg:text-left order-2 lg:order-1 relative z-10">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-900 border border-white/5 rounded-md mx-auto lg:mx-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                    <span className="font-mono text-[9px] text-zinc-300 uppercase tracking-widest">BI / Machine Learning</span>
+                  </div>
+                  <h2 className="text-4xl sm:text-6xl text-white tracking-tighter">Opal</h2>
+                  <p className="text-zinc-400 text-sm sm:text-base font-light leading-relaxed">Zaawansowany panel analityczny Business Intelligence (BI) wykorzystujący nienadzorowane uczenie maszynowe (K-Means Clustering) do segmentacji rzeczywistych danych rynkowych. System, zbudowany w 100% w architekturze Node.js, eliminuje potrzebę zewnętrznych mikroserwisów Python, oferując błyskawiczną klasyfikację profili. Wdrożyłem interaktywny Cluster Explorer z diagnostyką Metody Łokcia (Elbow Method), wielowymiarowe wykresy profilowe oraz symulator &quot;What-If&quot;, dostarczając precyzyjnych wglądów biznesowych w czasie rzeczywistym.</p>
+                </div>
+                <div className="aspect-4/3 w-full bg-zinc-900 rounded-2xl border border-white/10 overflow-hidden relative group shadow-2xl order-1 lg:order-2">
+                  <AnimatedWebP src="/opal.webp" alt="Animacja projektu Opal" className="opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
                 </div>
               </div>
             </section>

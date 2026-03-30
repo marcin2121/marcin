@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Geist_Mono } from "next/font/google"; // ✅ Zostawiamy tylko Mono
+import { Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
 
 const geistMono = Geist_Mono({
   subsets: ["latin"],
-  display: 'swap', // To powstrzymuje błąd "Eliminate render-blocking resources"
+  display: 'swap', // Prevents render-blocking font load
 });
 
 export const metadata: Metadata = {
@@ -58,17 +58,17 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pl">
-      {/* ✅ Zastosowanie fontu Mono na całym body */}
+      {/* Geist Mono applied globally */}
       <body suppressHydrationWarning className={`${geistMono.className} bg-zinc-950 text-zinc-50 antialiased overflow-x-hidden selection:bg-orange-500/30 selection:text-orange-200`}>
          
-         {/* ✅ Skrypt Umami (Bez Cookies, Bez Banerów, Bez GTM) */}
+         {/* Umami Analytics (cookie-free, GDPR-compliant) */}
          <Script 
-           src="https://analytics.molendadevelopment.pl/script.js"
-           data-website-id="0e03a10c-fb02-4e95-b03b-008e9e5f6a2f" // ⚠️ WAŻNE: Wklej tutaj swój ciąg znaków z panelu Umami
-           strategy="afterInteractive"
-         />
+            src="https://analytics.molendadevelopment.pl/script.js"
+            data-website-id="0e03a10c-fb02-4e95-b03b-008e9e5f6a2f"
+            strategy="afterInteractive"
+          />
         
-        {/* JSON-LD dla usług profesjonalnych */}
+        {/* JSON-LD structured data for ProfessionalService schema */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

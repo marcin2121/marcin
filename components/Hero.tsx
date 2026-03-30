@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 import MagneticWrapper from '@/components/ui/MagneticWrapper';
 import { pushGTMEvent } from '@/app/page';
 
-// 🔥 Leniwe ładowanie cząsteczek dla max wydajności
+// Lazy-loaded for performance — excluded from initial bundle
 const Particles = dynamic(() => import('@/components/ui/Particles'), { ssr: false });
 
 interface HeroProps {
@@ -27,7 +27,7 @@ export default function Hero({ onNavigate }: HeroProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [orbitRadius, setOrbitRadius] = useState(160);
 
-  // Współrzędne kursora
+  // Cursor coordinates for parallax effect
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   const rotation = useMotionValue(0);
@@ -131,17 +131,17 @@ export default function Hero({ onNavigate }: HeroProps) {
           </motion.div>
         </h1>
 
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut", delay: 1.2 }}
-          className="flex flex-col items-start w-full"
-        >
+        {/* LCP element — rendered immediately, no animation delay */}
           <p className="font-mono text-zinc-300 text-sm sm:text-base lg:text-lg font-light leading-relaxed mb-12 max-w-lg">
             Projektuję ekosystemy cyfrowe dla web i mobile. Odrzucam kompromisy i szablony, dostarczając kod, który <strong className="text-white font-medium">ładuje się natychmiast i pracuje na Twój wynik biznesowy.</strong>
           </p>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full mb-16">
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut", delay: 1.2 }}
+            className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full mb-16"
+          >
             <MagneticWrapper>
               <button
                 onClick={() => {
@@ -169,8 +169,7 @@ export default function Hero({ onNavigate }: HeroProps) {
                 Inicjuj kontakt
               </button>
             </MagneticWrapper>
-          </div>
-        </motion.div>
+          </motion.div>
       </div>
     </section>
   );

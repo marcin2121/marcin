@@ -1,7 +1,11 @@
 {
   "name": "moje-portfolio",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
+  "description": "Premium developer portfolio built with Next.js 16, Three.js, GSAP & Framer Motion. Scroll-driven experience with 3D interactivity and Lighthouse 100/100.",
+  "author": "Marcin Molenda <kontakt@molendadevelopment.pl>",
+  "homepage": "https://molendadevelopment.pl",
+  "license": "MIT",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

@@ -1,12 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Kompresja zasobów (zazwyczaj domyślna, ale warto wymusić)
+  // Enable response compression (gzip/brotli)
   compress: true,
   
   experimental: {
-    // 🔥 Turbo-odchudzanie paczek JS
-    // Pobiera tylko te ikony/funkcje, których faktycznie używasz
+    // Tree-shake heavy dependencies — only import used exports
     optimizePackageImports: ['lucide-react', 'framer-motion'],
   },
 };
