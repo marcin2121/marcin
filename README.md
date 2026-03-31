@@ -131,11 +131,13 @@ npm run build && npm start
 ### ⚡ Performance Optimizations
 
 - Dynamic imports for Three.js, Particles, and GSAP (excluded from initial bundle)
-- `requestIdleCallback` pattern for deferring non-critical initialization
-- `IntersectionObserver`-based lazy loading for animated images
-- `display: swap` font loading strategy
-- Turbopack-optimized package imports (`lucide-react`, `framer-motion`)
-- Gzip/Brotli compression enabled
+- `requestIdleCallback` pattern for deferring GSAP/ScrollTrigger initialization to idle frames
+- LCP element rendered without Framer Motion animation delay (zero render delay on desktop)
+- Lazy-loaded `use-sound` / Howler.js — only imported on first user interaction, not at page load
+- `IntersectionObserver`-based lazy loading for animated WebP images with decode async
+- `display: swap` font loading strategy (eliminates render-blocking fonts)
+- Turbopack-optimized tree-shaking for `lucide-react` and `framer-motion`
+- Gzip/Brotli compression enabled via Next.js
 
 ---
 
