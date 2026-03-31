@@ -118,7 +118,7 @@ moje-portfolio/
 ```bash
 # Clone
 git clone https://github.com/marcin2121/moje-portfolio.git
-cd marcin
+cd moje-portfolio
 
 # Install
 npm install
