@@ -110,17 +110,15 @@ export default function PortfolioHome() {
       stRef.current   = ScrollTrigger;
 
       const ctx = gsap.context(() => {
-        const scrollerNode = document.getElementById('scroll-container');
-        if (scrollerNode) {
-          ScrollTrigger.defaults({ scroller: scrollerNode });
-        }
+        const scrollerNode = document.getElementById('scroll-container') || window;
         
         const mm = gsap.matchMedia();
         mm.add('(min-width: 1024px)', () => {
-          gsap.to(horizontal1Ref.current, { xPercent: -50, ease: 'none', scrollTrigger: { trigger: horizontal1Ref.current, start: 'top top', end: '+=100%', pin: true, scrub: true } });
-          gsap.to(horizontal2Ref.current, { xPercent: -83.33, ease: 'none', scrollTrigger: { trigger: horizontal2Ref.current, start: 'top top', end: '+=500%', pin: true, scrub: true } });
+          gsap.to(horizontal1Ref.current, { xPercent: -50, ease: 'none', scrollTrigger: { scroller: scrollerNode, trigger: horizontal1Ref.current, start: 'top top', end: '+=100%', pin: true, scrub: true } });
+          gsap.to(horizontal2Ref.current, { xPercent: -83.33, ease: 'none', scrollTrigger: { scroller: scrollerNode, trigger: horizontal2Ref.current, start: 'top top', end: '+=500%', pin: true, scrub: true } });
           
           ScrollTrigger.create({
+            scroller: scrollerNode,
             start: 0,
             end: 'max',
             snap: {
@@ -138,6 +136,7 @@ export default function PortfolioHome() {
         });
 
         ScrollTrigger.create({
+          scroller: scrollerNode,
           start: 0,
           end: 'max',
           onUpdate: (self) => {
