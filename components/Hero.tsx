@@ -26,6 +26,7 @@ const TECH_STACK = [
 export default function Hero({ onNavigate }: HeroProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [orbitRadius, setOrbitRadius] = useState(160);
+  const [isMounted, setIsMounted] = useState(false);
 
   // Cursor coordinates for parallax effect
   const mouseX = useMotionValue(0);
@@ -33,6 +34,7 @@ export default function Hero({ onNavigate }: HeroProps) {
   const rotation = useMotionValue(0);
 
   useEffect(() => {
+    setIsMounted(true);
     const handleResize = () => {
       if (typeof window !== 'undefined') {
         if (window.innerWidth > 1536) setOrbitRadius(240);
@@ -71,7 +73,7 @@ export default function Hero({ onNavigate }: HeroProps) {
       />
 
       <div className="absolute top-1/2 -translate-y-1/2 left-[45%] sm:left-[55%] lg:left-[55%] xl:left-[60%] w-[400px] h-[400px] lg:w-[600px] lg:h-[600px] pointer-events-none hidden md:flex items-center justify-center opacity-30 lg:opacity-100 z-0 transition-all duration-700">
-        {TECH_STACK.map((tech, i) => (
+        {isMounted && TECH_STACK.map((tech, i) => (
           <TechNode 
             key={tech.name} 
             tech={tech} 

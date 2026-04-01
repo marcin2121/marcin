@@ -110,7 +110,10 @@ export default function PortfolioHome() {
       stRef.current   = ScrollTrigger;
 
       const ctx = gsap.context(() => {
-        ScrollTrigger.defaults({ scroller: '#scroll-container' });
+        const scrollerNode = document.getElementById('scroll-container');
+        if (scrollerNode) {
+          ScrollTrigger.defaults({ scroller: scrollerNode });
+        }
         
         const mm = gsap.matchMedia();
         mm.add('(min-width: 1024px)', () => {
