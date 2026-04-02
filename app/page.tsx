@@ -13,6 +13,7 @@ import Link from 'next/link';
 import TiltCard from '@/components/ui/TiltCard';
 import BottomSheet from '@/components/ui/BottomSheet';
 import Configurator from '@/components/ui/Configurator';
+import FAQ from '@/components/ui/FAQ';
 
 // Dynamically loaded to avoid blocking initial paint
 const Particles = dynamic(() => import('@/components/ui/Particles'), { ssr: false });
@@ -52,7 +53,8 @@ const NAV_DOTS = [
   { id: 6, title: 'Zielnik' },
   { id: 7, title: 'MDK' },
   { id: 8, title: 'Opal' },
-  { id: 9, title: 'Kontakt' },
+  { id: 9, title: 'FAQ' },
+  { id: 10, title: 'Kontakt' },
 ] as const;
 
 /** Pushes custom events to GTM dataLayer for analytics tracking */
@@ -133,10 +135,12 @@ export default function PortfolioHome() {
                 return progress;
               },
               duration: { min: 0.1, max: 0.3 },
-              delay: 0.1,
-              ease: 'power1.out',
+              delay: 0,
+              ease: 'power1.inOut',
             }
           });
+          
+          ScrollTrigger.refresh();
         });
 
         ScrollTrigger.create({
@@ -279,8 +283,8 @@ export default function PortfolioHome() {
             <Hero onNavigate={scrollToSection} />
 
        {/* ─── Usługi ─── */}
-       <section className="w-full lg:w-1/2 min-h-screen lg:h-full flex items-center justify-center px-6 sm:px-10 lg:px-12 py-20 lg:py-0 relative overflow-hidden bg-transparent">
-              <div className="flex flex-col gap-8 lg:gap-10 max-w-5xl w-full relative z-10">
+       <section className="w-full lg:w-1/2 h-screen flex items-center justify-center px-6 sm:px-10 lg:px-12 py-10 lg:py-0 relative overflow-hidden bg-transparent">
+              <div className="flex flex-col gap-6 lg:gap-10 max-w-5xl w-full relative z-10 overflow-y-auto max-h-full scrollbar-hide py-10">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 w-full">
                   <MagicBento className="bg-zinc-950 border border-white/5 hover:border-orange-500/40 transition-all group">
                     <div className="flex items-center justify-between mb-6">
@@ -546,8 +550,10 @@ export default function PortfolioHome() {
             </section>
           </div>
 
+          <FAQ />
+
           {/* SEKCJA 7: Kontakt */}
-          <section className="w-full min-h-screen flex flex-col items-center justify-center px-6 sm:px-10 lg:px-20 py-20 lg:py-0 bg-transparent border-t border-white/5 relative overflow-hidden">
+          <section className="w-full h-screen flex flex-col items-center justify-center px-6 sm:px-10 lg:px-20 bg-transparent border-t border-white/5 relative overflow-hidden py-10 lg:py-0">
             <Particles color="#ea580c" />
             <div className="max-w-5xl w-full bg-zinc-900/40 border border-white/5 rounded-[2rem] p-8 lg:p-16 flex flex-col lg:grid lg:grid-cols-2 gap-10 lg:gap-16 relative z-10 backdrop-blur-2xl shadow-2xl">
               <div className="text-center lg:text-left flex flex-col justify-center">

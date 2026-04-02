@@ -71,7 +71,7 @@ export default function Configurator() {
         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mb-6">
           <CheckCircle2 className="w-8 h-8 text-green-500" />
         </motion.div>
-        <h3 className="text-xl text-white font-bold mb-2">Priorytet Przyjęty</h3>
+        <h3 className="text-xl text-white font-bold mb-2"> Zapytanie przyjęte </h3>
         <p className="text-sm text-zinc-400">Przeanalizuję Twój profil bizesowy i odezwę się z gotową koncepcją technologiczną w ciągu 24h.</p>
       </div>
     );
