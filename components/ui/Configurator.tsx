@@ -38,7 +38,7 @@ export default function Configurator() {
   const handleSelect = (optionId: string) => {
     setSelections(prev => ({ ...prev, [step]: optionId }));
     setTimeout(() => {
-      if (step < STEPS.length) {
+      if (step <= STEPS.length) {
         setStep(step + 1);
       }
     }, 300);
