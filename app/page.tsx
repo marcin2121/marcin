@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion';
-import { Code2, Smartphone, Zap, Gauge, ArrowRight, Facebook, Linkedin, Monitor, Smartphone as PhoneIcon, X, Terminal } from 'lucide-react';
+import { Code2, Smartphone, Zap, Gauge, ArrowRight, Facebook, Linkedin, Monitor, Smartphone as PhoneIcon, X, Terminal , ChevronDown, ChevronUp } from 'lucide-react';
 import MagicBento from '@/components/ui/MagicBento';
 import Hero from '@/components/Hero';
 import MagneticWrapper from '@/components/ui/MagneticWrapper';
@@ -232,6 +232,7 @@ export default function PortfolioHome() {
     <>
       {/* Global engineering grid background */}
       <div className="fixed inset-0 z-[-1] bg-zinc-950 pointer-events-none">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-orange-900/10 via-zinc-950 to-zinc-950 pointer-events-none" />
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-size-[40px_40px] mask-[radial-gradient(ellipse_80%_80%_at_0%_50%,#000_30%,transparent_100%)] opacity-80 pointer-events-none" />
       </div>
 
@@ -276,23 +277,34 @@ export default function PortfolioHome() {
           </div>
         </nav>
 
+        {/* ─── Floating Next/Prev Navigation ─── */}
+        <div className="fixed right-6 lg:right-12 bottom-6 lg:bottom-12 z-50 flex flex-col gap-2">
+          <button
+            onClick={() => scrollToSection(Math.max(0, activeDot - 1))}
+            disabled={activeDot === 0}
+            className="w-10 h-10 lg:w-12 lg:h-12 flex items-center justify-center bg-zinc-900/80 backdrop-blur-md border border-white/10 rounded-full text-zinc-400 hover:text-white hover:bg-orange-600 hover:border-orange-500 disabled:opacity-0 transition-all shadow-lg active:scale-95"
+            aria-label="Poprzednia sekcja"
+          >
+            <ChevronUp size={20} />
+          </button>
+          <button
+            onClick={() => scrollToSection(Math.min(NAV_DOTS.length - 1, activeDot + 1))}
+            disabled={activeDot === NAV_DOTS.length - 1}
+            className="w-10 h-10 lg:w-12 lg:h-12 flex items-center justify-center bg-zinc-900/80 backdrop-blur-md border border-white/10 rounded-full text-zinc-400 hover:text-white hover:bg-orange-600 hover:border-orange-500 disabled:opacity-0 transition-all shadow-lg active:scale-95"
+            aria-label="Następna sekcja"
+          >
+            <ChevronDown size={20} />
+          </button>
+        </div>
+
         {/* ─── Mobile Bottom Nav (Sticky CTA) ─── */}
-        <nav className="flex lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] bg-zinc-900/90 backdrop-blur-2xl border border-white/10 rounded-2xl z-50 items-center justify-between px-4 py-3 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.8)]">
-          <div className="flex flex-col gap-1.5 w-[45%]">
-            <div className="text-[9px] font-mono font-bold text-zinc-400 uppercase tracking-widest truncate">
-              {NAV_DOTS[activeDot]?.title || 'Przewijaj'}
-            </div>
-            <div className="relative w-full h-1 flex items-center shrink-0">
-              <div className="absolute left-0 right-0 h-full bg-white/10 rounded-full" />
-              <motion.div className="absolute left-0 h-full bg-orange-500 rounded-full z-0" style={{ width: lavaWidth }} />
-            </div>
-          </div>
+        <nav className="flex lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[60%] sm:w-[50%] max-w-[250px] bg-zinc-900/90 backdrop-blur-2xl border border-white/10 rounded-2xl z-50 items-center justify-center px-4 py-3 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.8)]">
           <button 
             onClick={() => {
               pushGTMEvent('mobile_nav_cta_click');
               setIsBottomSheetOpen(true);
             }} 
-            className="px-5 py-2.5 bg-orange-600 text-white font-black uppercase text-[10px] tracking-widest rounded-xl hover:bg-orange-500 shadow-[0_0_15px_#ea580c40] transition-colors whitespace-nowrap active:scale-95"
+            className="w-full py-2 bg-orange-600 text-white font-black uppercase text-[10px] tracking-widest rounded-xl hover:bg-orange-500 shadow-[0_0_15px_#ea580c40] transition-colors whitespace-nowrap active:scale-95"
           >
             Wyceń Projekt
           </button>
@@ -307,10 +319,10 @@ export default function PortfolioHome() {
        <section className="w-full lg:w-1/2 h-screen flex items-center justify-center px-6 sm:px-10 lg:px-12 py-10 lg:py-0 relative overflow-hidden bg-transparent">
               <div className="flex flex-col gap-6 lg:gap-10 max-w-5xl w-full relative z-10 py-10">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 w-full">
-                  <MagicBento className="bg-zinc-950 border border-white/5 hover:border-orange-500/40 transition-all group">
+                  <MagicBento className="bg-zinc-900/50 backdrop-blur-md border border-white/10 hover:border-orange-500/50 hover:bg-zinc-900/80 transition-all group shadow-lg">
                     <div className="flex items-center justify-between mb-6">
                       <Zap className="text-orange-500 w-5 h-5 group-hover:scale-110 transition-transform" />
-                      <span className="font-mono text-[10px] text-zinc-400">sys.module_01</span>
+                      <span className="font-mono text-[10px] text-zinc-400">Obszar_01</span>
                     </div>
                     <h3 className="font-bold text-sm lg:text-base mb-3 text-white">
                       <span className="text-orange-500 mr-2">&gt;</span>Strony WWW
@@ -320,10 +332,10 @@ export default function PortfolioHome() {
                     </p>
                   </MagicBento>
 
-                  <MagicBento className="bg-zinc-950 border border-white/5 hover:border-orange-500/40 transition-all group">
+                  <MagicBento className="bg-zinc-900/50 backdrop-blur-md border border-white/10 hover:border-orange-500/50 hover:bg-zinc-900/80 transition-all group shadow-lg">
                     <div className="flex items-center justify-between mb-6">
                       <Smartphone className="text-orange-500 w-5 h-5 group-hover:scale-110 transition-transform" />
-                      <span className="font-mono text-[10px] text-zinc-400">sys.module_02</span>
+                      <span className="font-mono text-[10px] text-zinc-400">Obszar_02</span>
                     </div>
                     <h3 className="font-bold text-sm lg:text-base mb-3 text-white">
                       <span className="text-orange-500 mr-2">&gt;</span>Aplikacje SaaS
@@ -333,10 +345,10 @@ export default function PortfolioHome() {
                     </p>
                   </MagicBento>
 
-                  <MagicBento className="bg-zinc-950 border border-white/5 hover:border-orange-500/40 transition-all group">
+                  <MagicBento className="bg-zinc-900/50 backdrop-blur-md border border-white/10 hover:border-orange-500/50 hover:bg-zinc-900/80 transition-all group shadow-lg">
                     <div className="flex items-center justify-between mb-6">
                       <Gauge className="text-orange-500 w-5 h-5 group-hover:scale-110 transition-transform" />
-                      <span className="font-mono text-[10px] text-zinc-400">sys.module_03</span>
+                      <span className="font-mono text-[10px] text-zinc-400">Obszar_03</span>
                     </div>
                     <h3 className="font-bold text-sm lg:text-base mb-3 text-white">
                       <span className="text-orange-500 mr-2">&gt;</span>Optymalizacja
@@ -346,10 +358,10 @@ export default function PortfolioHome() {
                     </p>
                   </MagicBento>
 
-                  <MagicBento className="bg-zinc-950 border border-white/5 hover:border-orange-500/40 transition-all group">
+                  <MagicBento className="bg-zinc-900/50 backdrop-blur-md border border-white/10 hover:border-orange-500/50 hover:bg-zinc-900/80 transition-all group shadow-lg">
                     <div className="flex items-center justify-between mb-6">
                       <Code2 className="text-orange-500 w-5 h-5 group-hover:scale-110 transition-transform" />
-                      <span className="font-mono text-[10px] text-zinc-400">sys.module_04</span>
+                      <span className="font-mono text-[10px] text-zinc-400">Obszar_04</span>
                     </div>
                     <h3 className="font-bold text-sm lg:text-base mb-3 text-white">
                       <span className="text-orange-500 mr-2">&gt;</span>Narzędzia B2B
@@ -370,7 +382,7 @@ export default function PortfolioHome() {
                     <div className="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
                       <Terminal size={16} className="text-orange-500" />
                     </div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Scale_Logic:</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Zawsze na bieżąco:</span>
                   </div>
                   <p className="text-[11px] lg:text-xs text-zinc-400 font-light leading-relaxed text-center sm:text-left">
                     Moje wsparcie obejmuje pełne spektrum techniczne: od <span className="text-zinc-200">mikro-optymalizacji</span> (np. szybkość obrazów, poprawa LCP) po <span className="text-zinc-200">złożone systemy dedykowane</span>. Niezależnie od skali zadania, jakość kodu pozostaje bezkompromisowa.
@@ -392,11 +404,11 @@ export default function PortfolioHome() {
                 <span className="text-orange-500">~/marcin-molenda</span>
                 <span className="text-zinc-400">/</span>
                 <Terminal size={12} className="text-zinc-400" />
-                <span className="text-zinc-400">whoami --full</span>
+                <span className="text-zinc-400">Kim jestem</span>
               </div>
               
               <h2 className="text-4xl sm:text-6xl lg:text-7xl xl:text-[5.5rem] mb-10 tracking-tighter text-white leading-[0.9] max-w-3xl">
-                <span className="text-orange-500 mr-4 font-mono font-light">&gt;</span>Kod pisany pod Twoje zasady.
+                <span className="text-orange-500 mr-4 font-mono font-light">&gt;</span>Rozwiązania szyte na miarę.
               </h2>
               
               <div className="space-y-6 max-w-2xl">
@@ -411,12 +423,12 @@ export default function PortfolioHome() {
               <div className="mt-16 flex flex-col items-center gap-8">
                 <div className="flex items-center gap-4">
                   <div className="w-8 h-px bg-zinc-800" />
-                  <span className="font-mono text-[9px] text-zinc-400 uppercase tracking-[0.4em]">Ready for execution</span>
+                  <span className="font-mono text-[9px] text-zinc-400 uppercase tracking-[0.4em]">Gotowy do działania</span>
                   <div className="w-8 h-px bg-zinc-800" />
                 </div>
                 
                 <div className="flex flex-col items-center gap-3 animate-bounce">
-                  <span className="font-mono text-[9px] uppercase tracking-widest text-orange-600">Scroll.init()</span>
+                  <span className="font-mono text-[9px] uppercase tracking-widest text-orange-600">Poznajmy się lepiej</span>
                   <ArrowRight className="w-4 h-4 rotate-90 text-orange-600" />
                 </div>
               </div>
@@ -457,7 +469,7 @@ export default function PortfolioHome() {
                         handleOpenDemo({ url: 'https://www.sklep-urwis.pl', title: 'sklep-urwis.pl', colorClass: 'text-orange-500', bgClass: 'bg-orange-800' });
                       }} className="px-8 py-4 bg-orange-800 text-white font-mono uppercase text-[10px] lg:text-xs tracking-widest rounded-lg shadow-lg hover:bg-orange-700 transition-colors flex items-center gap-3">
                         <Terminal size={14} />
-                        <span>Init Demo</span>
+                        <span>Zobacz Demo</span>
                       </button>
                     </MagneticWrapper>
                   </div>
@@ -502,7 +514,7 @@ export default function PortfolioHome() {
                         handleOpenDemo({ url: 'https://zamówtu.pl/demo', title: 'zamowtu.pl', colorClass: 'text-orange-500', bgClass: 'bg-orange-800' });
                       }} className="px-8 py-4 bg-orange-800 text-white font-mono uppercase text-[10px] lg:text-xs tracking-widest rounded-lg shadow-lg hover:bg-orange-700 transition-colors flex items-center gap-3">
                         <Terminal size={14} />
-                        <span>Init Demo</span>
+                        <span>Zobacz Demo</span>
                       </button>
                     </MagneticWrapper>
                   </div>
@@ -513,7 +525,7 @@ export default function PortfolioHome() {
                 }} className="aspect-4/3 w-full cursor-pointer order-1 lg:order-2 group">
                   <Image src="/zamowtu.webp" alt="Podgląd systemu zamówień Zamowtu" fill priority sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
                   <div className="absolute inset-0 bg-zinc-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <span className="text-white font-mono font-bold text-[10px] uppercase tracking-widest bg-orange-800 px-6 py-3 rounded-lg shadow-2xl">Execute</span>
+                    <span className="text-white font-mono font-bold text-[10px] uppercase tracking-widest bg-orange-800 px-6 py-3 rounded-lg shadow-2xl">Uruchom</span>
                   </div>
                 </TiltCard>
               </div>
@@ -585,7 +597,7 @@ export default function PortfolioHome() {
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-50"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
                   </span>
-                  <span>system.status: awaiting_input</span>
+                  <span>Zapraszam do kontaktu</span>
                 </div>
                 <h2 className="text-4xl sm:text-5xl lg:text-6xl tracking-tighter mb-6 text-white">Czas na konkret.</h2>
                 <p className="text-zinc-400 mb-10 font-light leading-relaxed text-sm sm:text-base max-w-md mx-auto lg:mx-0">
@@ -611,8 +623,8 @@ export default function PortfolioHome() {
                 <form onSubmit={handleFormSubmit} className="space-y-4 mt-6">
                   {isFormSubmitted ? (
                     <div className="w-full h-48 flex flex-col items-center justify-center text-center">
-                      <div className="font-mono text-green-500/70 text-xs mb-3">~ % execution_success</div>
-                      <p className="text-white font-bold mb-1">Specyfikacja przyjęta.</p>
+                      <div className="font-mono text-green-500/70 text-xs mb-3">Wiadomość wysłana</div>
+                      <p className="text-white font-bold mb-1">Dziękuję za kontakt.</p>
                       <p className="text-xs text-zinc-500 font-light">Odezwę się najszybciej, jak to możliwe.</p>
                     </div>
                   ) : (
@@ -623,7 +635,7 @@ export default function PortfolioHome() {
                       {formError && <p className="text-red-500/80 font-mono text-[10px] px-2">error: {formError}</p>}
                       <MagneticWrapper className="w-full pt-2">
                         <button type="submit" disabled={isSubmitting} className="w-full py-5 bg-white text-black font-black uppercase text-[10px] tracking-[0.2em] rounded-xl shadow-lg hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3">
-                          {isSubmitting ? 'Przetwarzanie...' : 'Działamy'}
+                          {isSubmitting ? 'Przetwarzanie...' : 'Wyślij wiadomość'}
                           {!isSubmitting && <ArrowRight size={14} />}
                         </button>
                       </MagneticWrapper>
