@@ -101,20 +101,20 @@ export default function PortfolioHome() {
   const lavaWidth     = useTransform(smoothProgress, [0, 1], ['0%', '100%']);
 
   useEffect(() => {
-    const scrollerNode = document.getElementById('scroll-container');
-    if (scrollerNode) scrollerNode.scrollTo(0, 0);
-
+    if (typeof window !== 'undefined') {
+      window.scrollTo(0, 0);
+    }
     let isMounted = true;
-    let ctx: gsap.Context | null = null;
+    let idleId: number = -1;
 
-    const initGSAP = async () => {
+    idleId = rIC(async () => {
       const [{ default: gsap }, { ScrollTrigger }, { ScrollToPlugin }] = await Promise.all([
         import('gsap'),
         import('gsap/ScrollTrigger'),
         import('gsap/ScrollToPlugin')
       ]);
 
-      if (!isMounted || !scrollerNode) return;
+      if (!isMounted) return;
 
       gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
       ScrollTrigger.config({ ignoreMobileResize: true });
@@ -129,16 +129,12 @@ export default function PortfolioHome() {
             ease: 'none', 
             autoRound: false,
             scrollTrigger: { 
-              scroller: scrollerNode,
               trigger: horizontal1Ref.current, 
               start: 'top top', 
               end: '+=100%', 
               pin: true, 
-              pinType: 'transform',
-              anticipatePin: 1,
               scrub: true,
               invalidateOnRefresh: true,
-              refreshPriority: 2
             } 
           });
 
@@ -147,33 +143,24 @@ export default function PortfolioHome() {
             ease: 'none', 
             autoRound: false,
             scrollTrigger: { 
-              scroller: scrollerNode,
               trigger: horizontal2Ref.current, 
               start: 'top top', 
               end: '+=500%', 
               pin: true, 
-              pinType: 'transform',
-              anticipatePin: 1,
               scrub: true,
               invalidateOnRefresh: true,
-              refreshPriority: 1
             } 
           });
           
           ScrollTrigger.create({
-            scroller: scrollerNode,
             start: 0,
             end: 'max',
             snap: {
-              snapTo: (progress) => {
-                const step = 1 / (NAV_DOTS.length - 1);
-                const closestPoint = Math.round(progress / step) * step;
-                if (Math.abs(progress - closestPoint) < 0.04) return closestPoint;
-                return progress;
-              },
-              duration: { min: 0.1, max: 0.4 },
-              delay: 0.1,
+              snapTo: 1 / (NAV_DOTS.length - 1),
+              duration: { min: 0.1, max: 0.3 },
+              delay: 0.2, // Slightly more delay for better control
               ease: 'power2.out',
+              directional: true // Follows the scroll direction instead of just 'nearest'
             }
           });
           
@@ -181,7 +168,6 @@ export default function PortfolioHome() {
         });
 
         ScrollTrigger.create({
-          scroller: scrollerNode,
           start: 0,
           end: 'max',
           onUpdate: (self) => {
@@ -193,13 +179,11 @@ export default function PortfolioHome() {
           },
         });
       });
-    };
-
-    const timer = setTimeout(initGSAP, 150);
+    });
 
     return () => {
       isMounted = false;
-      clearTimeout(timer);
+      if (idleId !== -1) cIC(idleId);
       ctxRef.current?.revert();
     };
   }, [rawProgress]);
@@ -214,12 +198,11 @@ export default function PortfolioHome() {
   const scrollToSection = useCallback((index: number) => {
     const gsap = gsapRef.current;
     const ScrollTrigger = stRef.current;
-    const scroller = document.getElementById('scroll-container');
-    if (!gsap || !ScrollTrigger || !scroller) return; 
+    if (!gsap || !ScrollTrigger) return; 
     playNavClick();
     pushGTMEvent('nawigacja_klikniecie', { sekcja_docelowa: NAV_DOTS.find((d) => d.id === index)?.title ?? 'Nieznana' });
-    const targetY = (ScrollTrigger.maxScroll(scroller) / (NAV_DOTS.length - 1)) * index;
-    gsap.to(scroller, { scrollTo: targetY, duration: 1.2, ease: 'power3.inOut', overwrite: 'auto' });
+    const targetY = (ScrollTrigger.maxScroll(window) / (NAV_DOTS.length - 1)) * index;
+    gsap.to(window, { scrollTo: targetY, duration: 1.2, ease: 'power3.inOut', overwrite: 'auto' });
   }, [playNavClick]);
 
   const handleOpenDemo = useCallback((config: DemoConfig) => {

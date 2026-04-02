@@ -62,11 +62,13 @@ export const metadata: Metadata = {
   },
 };
 
+import SmoothScroll from "@/components/LenisProvider";
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pl">
       {/* Geist Mono applied globally */}
-      <body suppressHydrationWarning className={`${geistMono.className} bg-zinc-950 text-zinc-50 antialiased h-dvh overflow-hidden flex flex-col selection:bg-orange-500/30 selection:text-orange-200`}>
+      <body suppressHydrationWarning className={`${geistMono.className} bg-zinc-950 text-zinc-50 antialiased selection:bg-orange-500/30 selection:text-orange-200`}>
          
          {/* Umami Analytics (cookie-free, GDPR-compliant) */}
          <Script 
@@ -79,28 +81,27 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "ProfessionalService",
-              "name": "Marcin Molenda Development",
-              "image": "https://molendadevelopment.pl/og-image.jpg",
-              "@id": "https://molendadevelopment.pl",
-              "url": "https://molendadevelopment.pl",
-              "telephone": "+48665430469",
-              "address": {
-                "@type": "PostalAddress",
-                "addressLocality": "Zduńska Wola",
-                "addressCountry": "PL"
-              },
-              "serviceType": ["Strony Internetowe", "Aplikacje Webowe", "Aplikacje Mobilne", "Optymalizacja SEO"]
-            })
+             __html: JSON.stringify({
+               "@context": "https://schema.org",
+               "@type": "ProfessionalService",
+               "name": "Marcin Molenda Development",
+               "image": "https://molendadevelopment.pl/og-image.jpg",
+               "@id": "https://molendadevelopment.pl",
+               "url": "https://molendadevelopment.pl",
+               "telephone": "+48665430469",
+               "address": {
+                 "@type": "PostalAddress",
+                 "addressLocality": "Zduńska Wola",
+                 "addressCountry": "PL"
+               },
+               "serviceType": ["Strony Internetowe", "Aplikacje Webowe", "Aplikacje Mobilne", "Optymalizacja SEO"]
+             })
           }}
         />
 
-        {/* iOS-Shell: Scrollable content container */}
-        <div id="scroll-container" className="flex-1 overflow-y-auto overscroll-contain [WebkitOverflowScrolling:touch]">
+        <SmoothScroll>
           {children}
-        </div>
+        </SmoothScroll>
 
       </body>
     </html>

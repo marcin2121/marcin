@@ -125,16 +125,31 @@
   }
 }
 
-/* iOS-Shell-Fix */
+/* Lenis / Smooth Scroll Configuration */
 html, body {
-  max-width: 100dvw;
-  overflow-x: hidden;
   width: 100%;
+  min-height: 100%;
 }
 
 body {
-  height: 100dvh; 
-  overflow: hidden;
+  overflow-x: hidden;
   position: relative;
   overscroll-behavior: none;
+}
+
+/* Ensure smooth scrolling on touch devices if not handled by Lenis */
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
 }
