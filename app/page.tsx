@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion';
-import { Code2, Smartphone, Zap, Gauge, ArrowRight, Facebook, Linkedin, Monitor, Smartphone as PhoneIcon, X, Terminal } from 'lucide-react';
+import { Code2, Smartphone, Zap, Gauge, ArrowRight, Facebook, Linkedin, Monitor, Smartphone as PhoneIcon, X, Terminal , ChevronDown, ChevronUp } from 'lucide-react';
 import MagicBento from '@/components/ui/MagicBento';
 import Hero from '@/components/Hero';
 import MagneticWrapper from '@/components/ui/MagneticWrapper';
@@ -101,66 +101,42 @@ export default function PortfolioHome() {
   const lavaWidth     = useTransform(smoothProgress, [0, 1], ['0%', '100%']);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.scrollTo(0, 0);
-    }
+    document.getElementById('scroll-container')?.scrollTo(0, 0);
     let isMounted = true;
     let idleId: number = -1;
 
     idleId = rIC(async () => {
-      const [{ default: gsap }, { ScrollTrigger }, { ScrollToPlugin }] = await Promise.all([
-        import('gsap'),
-        import('gsap/ScrollTrigger'),
-        import('gsap/ScrollToPlugin')
-      ]);
-
-      if (!isMounted) return;
+      const { default: gsap }  = await import('gsap');
+      const { ScrollTrigger }  = await import('gsap/ScrollTrigger');
+      const { ScrollToPlugin } = await import('gsap/ScrollToPlugin');
+      if (!isMounted) return; 
 
       gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
-      ScrollTrigger.config({ ignoreMobileResize: true });
       gsapRef.current = gsap;
-      stRef.current = ScrollTrigger;
+      stRef.current   = ScrollTrigger;
 
-      ctxRef.current = gsap.context(() => {
+      const ctx = gsap.context(() => {
+        const scrollerNode = document.getElementById('scroll-container') || window;
+        
         const mm = gsap.matchMedia();
         mm.add('(min-width: 1024px)', () => {
-          gsap.to(horizontal1Ref.current, { 
-            xPercent: -50, 
-            ease: 'none', 
-            autoRound: false,
-            scrollTrigger: { 
-              trigger: horizontal1Ref.current, 
-              start: 'top top', 
-              end: '+=100%', 
-              pin: true, 
-              scrub: true,
-              invalidateOnRefresh: true,
-            } 
-          });
-
-          gsap.to(horizontal2Ref.current, { 
-            xPercent: -83.3333333, 
-            ease: 'none', 
-            autoRound: false,
-            scrollTrigger: { 
-              trigger: horizontal2Ref.current, 
-              start: 'top top', 
-              end: '+=500%', 
-              pin: true, 
-              scrub: true,
-              invalidateOnRefresh: true,
-            } 
-          });
+          gsap.to(horizontal1Ref.current, { xPercent: -50, ease: 'none', scrollTrigger: { scroller: scrollerNode, trigger: horizontal1Ref.current, start: 'top top', end: '+=100%', pin: true, scrub: true } });
+          gsap.to(horizontal2Ref.current, { xPercent: -83.33, ease: 'none', scrollTrigger: { scroller: scrollerNode, trigger: horizontal2Ref.current, start: 'top top', end: '+=500%', pin: true, scrub: true } });
           
           ScrollTrigger.create({
+            scroller: scrollerNode,
             start: 0,
             end: 'max',
             snap: {
-              snapTo: 1 / (NAV_DOTS.length - 1),
+              snapTo: (progress) => {
+                const step = 1 / (NAV_DOTS.length - 1);
+                const closestPoint = Math.round(progress / step) * step;
+                if (Math.abs(progress - closestPoint) < 0.03) return closestPoint;
+                return progress;
+              },
               duration: { min: 0.1, max: 0.3 },
-              delay: 0.2, // Slightly more delay for better control
-              ease: 'power2.out',
-              directional: true // Follows the scroll direction instead of just 'nearest'
+              delay: 0,
+              ease: 'power1.inOut',
             }
           });
           
@@ -168,17 +144,19 @@ export default function PortfolioHome() {
         });
 
         ScrollTrigger.create({
+          scroller: scrollerNode,
           start: 0,
           end: 'max',
           onUpdate: (self) => {
-            rawProgress.set(self.progress);
+            rawProgress.set(self.progress); // MotionValue update — no React re-render
             setActiveDot(prev => {
               const next = Math.round(self.progress * (NAV_DOTS.length - 1));
-              return prev !== next ? next : prev;
+              return prev !== next ? next : prev; // Only re-render on actual dot change
             });
           },
         });
-      });
+      }, containerRef);
+      ctxRef.current = ctx;
     });
 
     return () => {
@@ -201,8 +179,9 @@ export default function PortfolioHome() {
     if (!gsap || !ScrollTrigger) return; 
     playNavClick();
     pushGTMEvent('nawigacja_klikniecie', { sekcja_docelowa: NAV_DOTS.find((d) => d.id === index)?.title ?? 'Nieznana' });
-    const targetY = (ScrollTrigger.maxScroll(window) / (NAV_DOTS.length - 1)) * index;
-    gsap.to(window, { scrollTo: targetY, duration: 1.2, ease: 'power3.inOut', overwrite: 'auto' });
+    const scroller = document.getElementById('scroll-container');
+    const targetY = (ScrollTrigger.maxScroll(scroller || window) / (NAV_DOTS.length - 1)) * index;
+    gsap.to(scroller || window, { scrollTo: targetY, duration: 1.2, ease: 'power3.inOut', overwrite: 'auto' });
   }, [playNavClick]);
 
   const handleOpenDemo = useCallback((config: DemoConfig) => {
@@ -232,13 +211,14 @@ export default function PortfolioHome() {
     <>
       {/* Global engineering grid background */}
       <div className="fixed inset-0 z-[-1] bg-zinc-950 pointer-events-none">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-orange-900/10 via-zinc-950 to-zinc-950 pointer-events-none" />
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-size-[40px_40px] mask-[radial-gradient(ellipse_80%_80%_at_0%_50%,#000_30%,transparent_100%)] opacity-80 pointer-events-none" />
       </div>
 
       <div ref={containerRef} className="relative text-zinc-50 font-sans selection:bg-orange-500 selection:text-white">
         
         {/* Sidebar navigation with lava progress bar */}
-        <nav className="hidden lg:flex fixed left-0 top-0 bottom-0 w-24 bg-zinc-950 border-r border-white/5 z-100 flex-col items-center justify-center">
+        <nav className="hidden lg:flex fixed left-0 top-0 bottom-0 w-24 bg-zinc-950 border-r border-white/5 z-50 flex-col items-center justify-center">
           <div className="absolute top-10 w-full text-center text-[8px] font-black uppercase tracking-widest text-zinc-400 italic px-2 leading-tight">
             Marcin Molenda<br />Development
           </div>
@@ -276,6 +256,26 @@ export default function PortfolioHome() {
           </div>
         </nav>
 
+        {/* ─── Floating Next/Prev Navigation ─── */}
+        <div className="hidden lg:flex fixed right-12 bottom-12 z-50 flex-col gap-2">
+          <button 
+            onClick={() => scrollToSection(Math.max(0, activeDot - 1))}
+            disabled={activeDot === 0}
+            className="w-12 h-12 flex items-center justify-center bg-zinc-900/80 backdrop-blur-md border border-white/10 rounded-full text-zinc-400 hover:text-white hover:bg-orange-600 hover:border-orange-500 disabled:opacity-0 transition-all shadow-lg active:scale-95"
+            aria-label="Poprzednia sekcja"
+          >
+            <ChevronUp size={20} />
+          </button>
+          <button 
+            onClick={() => scrollToSection(Math.min(NAV_DOTS.length - 1, activeDot + 1))}
+            disabled={activeDot === NAV_DOTS.length - 1}
+            className="w-12 h-12 flex items-center justify-center bg-zinc-900/80 backdrop-blur-md border border-white/10 rounded-full text-zinc-400 hover:text-white hover:bg-orange-600 hover:border-orange-500 disabled:opacity-0 transition-all shadow-lg active:scale-95"
+            aria-label="Następna sekcja"
+          >
+            <ChevronDown size={20} />
+          </button>
+        </div>
+
         {/* ─── Mobile Bottom Nav (Sticky CTA) ─── */}
         <nav className="flex lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] bg-zinc-900/90 backdrop-blur-2xl border border-white/10 rounded-2xl z-50 items-center justify-between px-4 py-3 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.8)]">
           <div className="flex flex-col gap-1.5 w-[45%]">
@@ -298,66 +298,66 @@ export default function PortfolioHome() {
           </button>
         </nav>
 
-        <main className="pl-0 lg:pl-24 w-full relative overflow-x-hidden">
+        <main className="pl-0 lg:pl-24 w-full overflow-x-hidden">
           <div ref={horizontal1Ref} className="flex flex-col lg:flex-row w-full lg:w-[200%] h-auto lg:h-screen">
             
             <Hero onNavigate={scrollToSection} />
 
        {/* ─── Usługi ─── */}
        <section className="w-full lg:w-1/2 h-screen flex items-center justify-center px-6 sm:px-10 lg:px-12 py-10 lg:py-0 relative overflow-hidden bg-transparent">
-              <div className="flex flex-col gap-6 lg:gap-10 max-w-5xl w-full relative z-10 py-10">
+               <div className="flex flex-col gap-6 lg:gap-10 max-w-5xl w-full relative z-10 py-20 lg:py-10 lg:overflow-y-auto lg:max-h-full scrollbar-hide">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 w-full">
-                  <MagicBento className="bg-zinc-950 border border-white/5 hover:border-orange-500/40 transition-all group">
+                  <MagicBento className="bg-zinc-900/50 backdrop-blur-md border border-white/10 hover:border-orange-500/50 hover:bg-zinc-900/80 transition-all group shadow-lg">
                     <div className="flex items-center justify-between mb-6">
                       <Zap className="text-orange-500 w-5 h-5 group-hover:scale-110 transition-transform" />
-                      <span className="font-mono text-[10px] text-zinc-400">sys.module_01</span>
+                      <span className="font-mono text-[10px] text-zinc-400">Obszar_01</span>
                     </div>
                     <h3 className="font-bold text-sm lg:text-base mb-3 text-white">
                       <span className="text-orange-500 mr-2">&gt;</span>Strony WWW
                     </h3>
-                    <p className="text-xs text-zinc-300 font-light leading-relaxed">
-                      Architektura oparta o Next.js. Natychmiastowe ładowanie, przewaga w wynikach wyszukiwania i bezbłędny UX.
+                    <p className="text-[11px] lg:text-xs text-zinc-400 font-light leading-relaxed">
+                      Unikalne wizytówki online, portfolia i strony korporacyjne z naciskiem na konwersję i design.
                     </p>
                   </MagicBento>
 
-                  <MagicBento className="bg-zinc-950 border border-white/5 hover:border-orange-500/40 transition-all group">
+                  <MagicBento className="bg-zinc-900/50 backdrop-blur-md border border-white/10 hover:border-orange-500/50 hover:bg-zinc-900/80 transition-all group shadow-lg">
                     <div className="flex items-center justify-between mb-6">
                       <Smartphone className="text-orange-500 w-5 h-5 group-hover:scale-110 transition-transform" />
-                      <span className="font-mono text-[10px] text-zinc-400">sys.module_02</span>
+                      <span className="font-mono text-[10px] text-zinc-400">Obszar_02</span>
                     </div>
                     <h3 className="font-bold text-sm lg:text-base mb-3 text-white">
                       <span className="text-orange-500 mr-2">&gt;</span>Aplikacje SaaS
                     </h3>
-                    <p className="text-xs text-zinc-300 font-light leading-relaxed">
-                      Systemy klasy Enterprise. Relacyjne bazy danych, bezpieczna autoryzacja i skomplikowane procesy w czystym UI.
+                    <p className="text-[11px] lg:text-xs text-zinc-400 font-light leading-relaxed">
+                      Budowa skalowalnych systemów webowych (SaaS) i zaawansowanych dashboardów do zarządzania danymi.
                     </p>
                   </MagicBento>
 
-                  <MagicBento className="bg-zinc-950 border border-white/5 hover:border-orange-500/40 transition-all group">
+                  <MagicBento className="bg-zinc-900/50 backdrop-blur-md border border-white/10 hover:border-orange-500/50 hover:bg-zinc-900/80 transition-all group shadow-lg">
                     <div className="flex items-center justify-between mb-6">
                       <Gauge className="text-orange-500 w-5 h-5 group-hover:scale-110 transition-transform" />
-                      <span className="font-mono text-[10px] text-zinc-400">sys.module_03</span>
+                      <span className="font-mono text-[10px] text-zinc-400">Obszar_03</span>
                     </div>
                     <h3 className="font-bold text-sm lg:text-base mb-3 text-white">
                       <span className="text-orange-500 mr-2">&gt;</span>Optymalizacja
                     </h3>
-                    <p className="text-xs text-zinc-300 font-light leading-relaxed">
-                      Głęboka refaktoryzacja kodu, redukcja długu technologicznego i optymalizacja pod najwyższe standardy Core Web Vitals.
+                    <p className="text-[11px] lg:text-xs text-zinc-400 font-light leading-relaxed">
+                      Poprawa Core Web Vitals, dostępności i bezpieczeństwa istniejących już rozwiązań webowych.
                     </p>
                   </MagicBento>
 
-                  <MagicBento className="bg-zinc-950 border border-white/5 hover:border-orange-500/40 transition-all group">
-                    <div className="flex items-center justify-between mb-6">
-                      <Code2 className="text-orange-500 w-5 h-5 group-hover:scale-110 transition-transform" />
-                      <span className="font-mono text-[10px] text-zinc-400">sys.module_04</span>
-                    </div>
-                    <h3 className="font-bold text-sm lg:text-base mb-3 text-white">
-                      <span className="text-orange-500 mr-2">&gt;</span>Narzędzia B2B
-                    </h3>
-                    <p className="text-xs text-zinc-300 font-light leading-relaxed">
-                      Dedykowane algorytmy, inteligentne konfiguratory ofert i kalkulatory zamieniające ruch w wartościowe zapytania.
-                    </p>
-                  </MagicBento>
+                   <MagicBento className="bg-zinc-900/50 backdrop-blur-md border border-white/10 hover:border-orange-500/50 hover:bg-zinc-900/80 transition-all group shadow-lg">
+                     <div className="flex items-center justify-between mb-6">
+                       <Code2 className="text-orange-500 w-5 h-5 group-hover:scale-110 transition-transform" />
+                       <span className="font-mono text-[10px] text-zinc-400">Obszar_04</span>
+                     </div>
+                     <h3 className="font-bold text-sm lg:text-base mb-3 text-white">
+                       <span className="text-orange-500 mr-2">&gt;</span>Narzędzia B2B
+                     </h3>
+                     <p className="text-[11px] lg:text-xs text-zinc-400 font-light leading-relaxed">
+                       Dedykowane algorytmy, inteligentne konfiguratory ofert i kalkulatory zamieniające ruch w wartościowe zapytania.
+                     </p>
+                   </MagicBento>
                 </div>
 
                 <motion.div 
@@ -370,7 +370,7 @@ export default function PortfolioHome() {
                     <div className="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
                       <Terminal size={16} className="text-orange-500" />
                     </div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Scale_Logic:</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Zawsze na bieżąco:</span>
                   </div>
                   <p className="text-[11px] lg:text-xs text-zinc-400 font-light leading-relaxed text-center sm:text-left">
                     Moje wsparcie obejmuje pełne spektrum techniczne: od <span className="text-zinc-200">mikro-optymalizacji</span> (np. szybkość obrazów, poprawa LCP) po <span className="text-zinc-200">złożone systemy dedykowane</span>. Niezależnie od skali zadania, jakość kodu pozostaje bezkompromisowa.
@@ -381,7 +381,7 @@ export default function PortfolioHome() {
           </div>
 
          {/* ─── O Mnie ─── */}
-         <section className="w-full h-screen flex flex-col items-center justify-center px-6 lg:px-10 py-20 bg-zinc-950 relative z-50 overflow-hidden">
+         <section className="w-screen h-screen flex flex-col items-center justify-center px-6 lg:px-10 py-20 bg-transparent relative overflow-hidden">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full opacity-[0.02] pointer-events-none text-[25vw] font-black text-center leading-none select-none tracking-tighter">
               ROOT
             </div>
@@ -392,11 +392,11 @@ export default function PortfolioHome() {
                 <span className="text-orange-500">~/marcin-molenda</span>
                 <span className="text-zinc-400">/</span>
                 <Terminal size={12} className="text-zinc-400" />
-                <span className="text-zinc-400">whoami --full</span>
+                <span className="text-zinc-400">Kim jestem</span>
               </div>
               
               <h2 className="text-4xl sm:text-6xl lg:text-7xl xl:text-[5.5rem] mb-10 tracking-tighter text-white leading-[0.9] max-w-3xl">
-                <span className="text-orange-500 mr-4 font-mono font-light">&gt;</span>Kod pisany pod Twoje zasady.
+                <span className="text-orange-500 mr-4 font-mono font-light">&gt;</span>Rozwiązania szyte na miarę.
               </h2>
               
               <div className="space-y-6 max-w-2xl">
@@ -411,12 +411,12 @@ export default function PortfolioHome() {
               <div className="mt-16 flex flex-col items-center gap-8">
                 <div className="flex items-center gap-4">
                   <div className="w-8 h-px bg-zinc-800" />
-                  <span className="font-mono text-[9px] text-zinc-400 uppercase tracking-[0.4em]">Ready for execution</span>
+                  <span className="font-mono text-[9px] text-zinc-400 uppercase tracking-[0.4em]">Gotowy do działania</span>
                   <div className="w-8 h-px bg-zinc-800" />
                 </div>
                 
                 <div className="flex flex-col items-center gap-3 animate-bounce">
-                  <span className="font-mono text-[9px] uppercase tracking-widest text-orange-600">Scroll.init()</span>
+                  <span className="font-mono text-[9px] uppercase tracking-widest text-orange-600">Poznajmy się lepiej</span>
                   <ArrowRight className="w-4 h-4 rotate-90 text-orange-600" />
                 </div>
               </div>
@@ -457,7 +457,7 @@ export default function PortfolioHome() {
                         handleOpenDemo({ url: 'https://www.sklep-urwis.pl', title: 'sklep-urwis.pl', colorClass: 'text-orange-500', bgClass: 'bg-orange-800' });
                       }} className="px-8 py-4 bg-orange-800 text-white font-mono uppercase text-[10px] lg:text-xs tracking-widest rounded-lg shadow-lg hover:bg-orange-700 transition-colors flex items-center gap-3">
                         <Terminal size={14} />
-                        <span>Init Demo</span>
+                        <span>Zobacz Demo</span>
                       </button>
                     </MagneticWrapper>
                   </div>
@@ -502,7 +502,7 @@ export default function PortfolioHome() {
                         handleOpenDemo({ url: 'https://zamówtu.pl/demo', title: 'zamowtu.pl', colorClass: 'text-orange-500', bgClass: 'bg-orange-800' });
                       }} className="px-8 py-4 bg-orange-800 text-white font-mono uppercase text-[10px] lg:text-xs tracking-widest rounded-lg shadow-lg hover:bg-orange-700 transition-colors flex items-center gap-3">
                         <Terminal size={14} />
-                        <span>Init Demo</span>
+                        <span>Zobacz Demo</span>
                       </button>
                     </MagneticWrapper>
                   </div>
@@ -513,7 +513,7 @@ export default function PortfolioHome() {
                 }} className="aspect-4/3 w-full cursor-pointer order-1 lg:order-2 group">
                   <Image src="/zamowtu.webp" alt="Podgląd systemu zamówień Zamowtu" fill priority sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
                   <div className="absolute inset-0 bg-zinc-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <span className="text-white font-mono font-bold text-[10px] uppercase tracking-widest bg-orange-800 px-6 py-3 rounded-lg shadow-2xl">Execute</span>
+                    <span className="text-white font-mono font-bold text-[10px] uppercase tracking-widest bg-orange-800 px-6 py-3 rounded-lg shadow-2xl">Uruchom</span>
                   </div>
                 </TiltCard>
               </div>
@@ -571,12 +571,10 @@ export default function PortfolioHome() {
             </section>
           </div>
 
-          <div className="relative z-50 bg-zinc-950">
-            <FAQ />
-          </div>
+          <FAQ />
 
           {/* SEKCJA 7: Kontakt */}
-          <section className="w-full h-screen flex flex-col items-center justify-center px-6 sm:px-10 lg:px-20 bg-zinc-950 relative z-50 overflow-hidden py-10 lg:py-0">
+          <section className="w-full h-screen flex flex-col items-center justify-center px-6 sm:px-10 lg:px-20 bg-transparent border-t border-white/5 relative overflow-hidden py-10 lg:py-0">
             <Particles color="#ea580c" />
             <div className="max-w-5xl w-full bg-zinc-900/40 border border-white/5 rounded-[2rem] p-8 lg:p-16 flex flex-col lg:grid lg:grid-cols-2 gap-10 lg:gap-16 relative z-10 backdrop-blur-2xl shadow-2xl">
               <div className="text-center lg:text-left flex flex-col justify-center">
@@ -585,7 +583,7 @@ export default function PortfolioHome() {
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-50"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
                   </span>
-                  <span>system.status: awaiting_input</span>
+                  <span>Zapraszam do kontaktu</span>
                 </div>
                 <h2 className="text-4xl sm:text-5xl lg:text-6xl tracking-tighter mb-6 text-white">Czas na konkret.</h2>
                 <p className="text-zinc-400 mb-10 font-light leading-relaxed text-sm sm:text-base max-w-md mx-auto lg:mx-0">
@@ -611,8 +609,8 @@ export default function PortfolioHome() {
                 <form onSubmit={handleFormSubmit} className="space-y-4 mt-6">
                   {isFormSubmitted ? (
                     <div className="w-full h-48 flex flex-col items-center justify-center text-center">
-                      <div className="font-mono text-green-500/70 text-xs mb-3">~ % execution_success</div>
-                      <p className="text-white font-bold mb-1">Specyfikacja przyjęta.</p>
+                      <div className="font-mono text-green-500/70 text-xs mb-3">Wiadomość wysłana</div>
+                      <p className="text-white font-bold mb-1">Dziękuję za kontakt.</p>
                       <p className="text-xs text-zinc-500 font-light">Odezwę się najszybciej, jak to możliwe.</p>
                     </div>
                   ) : (
@@ -623,7 +621,7 @@ export default function PortfolioHome() {
                       {formError && <p className="text-red-500/80 font-mono text-[10px] px-2">error: {formError}</p>}
                       <MagneticWrapper className="w-full pt-2">
                         <button type="submit" disabled={isSubmitting} className="w-full py-5 bg-white text-black font-black uppercase text-[10px] tracking-[0.2em] rounded-xl shadow-lg hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3">
-                          {isSubmitting ? 'Przetwarzanie...' : 'Działamy'}
+                          {isSubmitting ? 'Przetwarzanie...' : 'Wyślij wiadomość'}
                           {!isSubmitting && <ArrowRight size={14} />}
                         </button>
                       </MagneticWrapper>

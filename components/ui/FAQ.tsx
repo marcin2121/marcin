@@ -31,8 +31,8 @@ export default function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section className="w-full min-h-screen flex flex-col items-center justify-center px-6 sm:px-10 lg:px-20 py-20 lg:py-0 bg-transparent relative overflow-hidden border-t border-white/5">
-      <div className="max-w-4xl mx-auto w-full">
+    <section className="w-full min-h-screen lg:h-screen h-auto flex flex-col items-center justify-center px-6 sm:px-10 lg:px-20 bg-transparent relative overflow-hidden border-t border-white/5">
+      <div className="max-w-4xl mx-auto w-full py-20 lg:py-0 lg:overflow-y-auto lg:max-h-full scrollbar-hide">
         <div className="flex flex-col items-center text-center mb-10 lg:mb-16">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-900 border border-white/5 rounded-md mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />
