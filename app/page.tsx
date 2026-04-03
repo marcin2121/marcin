@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion';
-import { Code2, Smartphone, Zap, Gauge, ArrowRight, Facebook, Linkedin, Monitor, Smartphone as PhoneIcon, X, Terminal , ChevronDown, ChevronUp } from 'lucide-react';
+import { Code2, Smartphone, Zap, Gauge, ArrowRight, Facebook, Linkedin, Monitor, Smartphone as PhoneIcon, X, Terminal, ChevronDown, ChevronUp } from 'lucide-react';
 import MagicBento from '@/components/ui/MagicBento';
 import Hero from '@/components/Hero';
 import MagneticWrapper from '@/components/ui/MagneticWrapper';
@@ -15,11 +15,9 @@ import BottomSheet from '@/components/ui/BottomSheet';
 import Configurator from '@/components/ui/Configurator';
 import FAQ from '@/components/ui/FAQ';
 
-// Dynamically loaded to avoid blocking initial paint
 const Particles = dynamic(() => import('@/components/ui/Particles'), { ssr: false });
 const UrwisModel = dynamic(() => import('@/components/UrwisModel'), { ssr: false });
 
-/** Defers non-critical work to idle browser frames with setTimeout fallback */
 const rIC = (cb: IdleRequestCallback): number => {
   if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
     return window.requestIdleCallback(cb);
@@ -27,7 +25,6 @@ const rIC = (cb: IdleRequestCallback): number => {
   return setTimeout(() => cb({ didTimeout: false, timeRemaining: () => 50 }), 50) as unknown as number;
 };
 
-/** Cancels a previously scheduled idle callback */
 const cIC = (id: number): void => {
   if (typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
     window.cancelIdleCallback(id);
@@ -57,7 +54,6 @@ const NAV_DOTS = [
   { id: 10, title: 'Kontakt' },
 ] as const;
 
-/** Pushes custom events to GTM dataLayer for analytics tracking */
 export const pushGTMEvent = (eventName: string, params: Record<string, unknown> = {}) => {
   if (typeof window !== 'undefined') {
     const w = window as unknown as { dataLayer: Record<string, unknown>[] };
@@ -78,12 +74,40 @@ export default function PortfolioHome() {
   const [activeDot, setActiveDot]         = useState(0);
   const [openDemo, setOpenDemo]           = useState<DemoConfig | null>(null);
   const [viewMode, setViewMode]           = useState<'desktop' | 'mobile'>('desktop');
-  const [isFormSubmitted, setIsFormSubmitted] = useState(false);
-  const [formError, setFormError]         = useState('');
-  const [isSubmitting, setIsSubmitting]   = useState(false);
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
 
-  // Lazy-load sound on first interaction to avoid Howler.js in initial bundle
+  const sectionRefs         = useRef<(HTMLElement | null)[]>([]);
+  const isAutoScrollingRef  = useRef(false);
+  const snapPointsRef       = useRef<number[]>([]);
+
+  const setSectionRef = useCallback((index: number) => (el: HTMLElement | null) => {
+    sectionRefs.current[index] = el;
+  }, []);
+
+  const rebuildSnapPoints = useCallback(() => {
+    const points: number[] = [];
+    const vh = window.innerHeight;
+    
+    // Points 0-2 (Hero, Usługi, O mnie)
+    const startY = 0; 
+    points[0] = startY;                        // Hero
+    points[1] = startY + vh;                   // Usługi (End of H1 pin)
+    points[2] = startY + 2 * vh;               // O mnie (Vertical revelation)
+    
+    // Points 3-8 (Portfolio Intro + 5 Projects)
+    const h2Start = 3 * vh; 
+    for (let i = 0; i <= 5; i++) {
+      points[3 + i] = h2Start + (i * vh);
+    }
+    
+    // Points 9-10 (FAQ, Kontakt)
+    const faqStart = (points[8] || 0) + vh;
+    points[9] = faqStart;
+    points[10] = faqStart + vh;
+
+    snapPointsRef.current = points;
+  }, []);
+
   const playRef = useRef<(() => void) | null>(null);
   const playNavClick = useCallback(() => {
     if (playRef.current) { playRef.current(); return; }
@@ -101,7 +125,7 @@ export default function PortfolioHome() {
   const lavaWidth     = useTransform(smoothProgress, [0, 1], ['0%', '100%']);
 
   useEffect(() => {
-    document.getElementById('scroll-container')?.scrollTo(0, 0);
+    window.scrollTo(0, 0);
     let isMounted = true;
     let idleId: number = -1;
 
@@ -116,45 +140,72 @@ export default function PortfolioHome() {
       stRef.current   = ScrollTrigger;
 
       const ctx = gsap.context(() => {
-        const scrollerNode = document.getElementById('scroll-container') || window;
-        
         const mm = gsap.matchMedia();
         mm.add('(min-width: 1024px)', () => {
-          gsap.to(horizontal1Ref.current, { xPercent: -50, ease: 'none', scrollTrigger: { scroller: scrollerNode, trigger: horizontal1Ref.current, start: 'top top', end: '+=100%', pin: true, scrub: true } });
-          gsap.to(horizontal2Ref.current, { xPercent: -83.33, ease: 'none', scrollTrigger: { scroller: scrollerNode, trigger: horizontal2Ref.current, start: 'top top', end: '+=500%', pin: true, scrub: true } });
-          
-          ScrollTrigger.create({
-            scroller: scrollerNode,
-            start: 0,
-            end: 'max',
-            snap: {
-              snapTo: (progress) => {
-                const step = 1 / (NAV_DOTS.length - 1);
-                const closestPoint = Math.round(progress / step) * step;
-                if (Math.abs(progress - closestPoint) < 0.03) return closestPoint;
-                return progress;
-              },
-              duration: { min: 0.1, max: 0.3 },
-              delay: 0,
-              ease: 'power1.inOut',
-            }
+          gsap.to(horizontal1Ref.current, { 
+            xPercent: -50, 
+            ease: 'none', 
+            scrollTrigger: { 
+              trigger: horizontal1Ref.current, 
+              start: 'top top', 
+              end: '+=100%', 
+              pin: true, 
+              scrub: 0.6 
+            } 
           });
-          
-          ScrollTrigger.refresh();
+          gsap.to(horizontal2Ref.current, { 
+            xPercent: -83.33, 
+            ease: 'none', 
+            scrollTrigger: { 
+              trigger: horizontal2Ref.current, 
+              start: 'top top', 
+              end: '+=500%', 
+              pin: true, 
+              scrub: 0.6 
+            } 
+          });
         });
 
-        ScrollTrigger.create({
-          scroller: scrollerNode,
+        const tracker = ScrollTrigger.create({
           start: 0,
           end: 'max',
+          onRefresh: rebuildSnapPoints,
           onUpdate: (self) => {
-            rawProgress.set(self.progress); // MotionValue update — no React re-render
-            setActiveDot(prev => {
-              const next = Math.round(self.progress * (NAV_DOTS.length - 1));
-              return prev !== next ? next : prev; // Only re-render on actual dot change
-            });
-          },
+            if (isAutoScrollingRef.current) return;
+            rawProgress.set(self.progress);
+            
+            const currentY = self.scroll();
+            const points = snapPointsRef.current;
+            if (points.length) {
+              let closestIndex = 0;
+              let minDist = Infinity;
+              points.forEach((point, index) => {
+                const dist = Math.abs(point - currentY);
+                if (dist < minDist) {
+                  minDist = dist;
+                  closestIndex = index;
+                }
+              });
+              setActiveDot(prev => prev !== closestIndex ? closestIndex : prev);
+            }
+          }
         });
+
+        rebuildSnapPoints();
+        
+        const onResize = () => {
+          rebuildSnapPoints();
+          ScrollTrigger.refresh();
+        };
+
+        window.addEventListener('resize', onResize);
+        window.addEventListener('refreshScroll', onResize);
+
+        return () => {
+          window.removeEventListener('resize', onResize);
+          window.removeEventListener('refreshScroll', onResize);
+          tracker.kill();
+        };
       }, containerRef);
       ctxRef.current = ctx;
     });
@@ -175,13 +226,30 @@ export default function PortfolioHome() {
 
   const scrollToSection = useCallback((index: number) => {
     const gsap = gsapRef.current;
-    const ScrollTrigger = stRef.current;
-    if (!gsap || !ScrollTrigger) return; 
+    if (!gsap) return;
+    
+    const points  = snapPointsRef.current;
+    const targetY = points[index];
+    if (typeof targetY !== 'number') return;
+
+    isAutoScrollingRef.current = true;
     playNavClick();
     pushGTMEvent('nawigacja_klikniecie', { sekcja_docelowa: NAV_DOTS.find((d) => d.id === index)?.title ?? 'Nieznana' });
-    const scroller = document.getElementById('scroll-container');
-    const targetY = (ScrollTrigger.maxScroll(scroller || window) / (NAV_DOTS.length - 1)) * index;
-    gsap.to(scroller || window, { scrollTo: targetY, duration: 1.2, ease: 'power3.inOut', overwrite: 'auto' });
+    
+    gsap.killTweensOf(window);
+    gsap.to(window, { 
+      scrollTo: { y: targetY, autoKill: false }, 
+      duration: 1, 
+      ease: 'power2.out', 
+      overwrite: true,
+      onComplete: () => {
+        isAutoScrollingRef.current = false;
+        setActiveDot(index);
+      },
+      onInterrupt: () => {
+        isAutoScrollingRef.current = false;
+      }
+    });
   }, [playNavClick]);
 
   const handleOpenDemo = useCallback((config: DemoConfig) => {
@@ -190,34 +258,14 @@ export default function PortfolioHome() {
     setOpenDemo(config);
   }, []);
 
-  const handleFormSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (isSubmitting) return;
-    setIsSubmitting(true);
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-    try {
-      const response = await fetch('https://formspree.io/f/mgolplyg', { method: 'POST', body: formData, headers: { Accept: 'application/json' } });
-      if (response.ok) {
-        pushGTMEvent('formularz_kontaktowy_wyslany');
-        setIsFormSubmitted(true);
-        setFormError('');
-        form.reset();
-      }
-    } catch { setFormError('Błąd połączenia.'); } finally { setIsSubmitting(false); }
-  }, [isSubmitting]);
-
   return (
     <>
-      {/* Global engineering grid background */}
       <div className="fixed inset-0 z-[-1] bg-zinc-950 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-orange-900/10 via-zinc-950 to-zinc-950 pointer-events-none" />
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-size-[40px_40px] mask-[radial-gradient(ellipse_80%_80%_at_0%_50%,#000_30%,transparent_100%)] opacity-80 pointer-events-none" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-size-[40px_40px] mask-[radial-gradient(ellipse_80%_80%_at_0%_50%,#000_30%,transparent_100%)] opacity-80 pointer-events-none" />
       </div>
 
       <div ref={containerRef} className="relative text-zinc-50 font-sans selection:bg-orange-500 selection:text-white">
         
-        {/* Sidebar navigation with lava progress bar */}
         <nav className="hidden lg:flex fixed left-0 top-0 bottom-0 w-24 bg-zinc-950 border-r border-white/5 z-50 flex-col items-center justify-center">
           <div className="absolute top-10 w-full text-center text-[8px] font-black uppercase tracking-widest text-zinc-400 italic px-2 leading-tight">
             Marcin Molenda<br />Development
@@ -229,7 +277,6 @@ export default function PortfolioHome() {
             {NAV_DOTS.map((dot, index) => {
               const isActive = activeDot === index;
               const isPassed = index < activeDot;
-              
               let dotClasses = 'bg-zinc-900 border-white/10';
               let textClasses = 'opacity-0 group-hover:opacity-50 text-white';
 
@@ -244,7 +291,6 @@ export default function PortfolioHome() {
               return (
                 <button
                   key={dot.id}
-                  aria-label={`Przejdź do: ${dot.title}`}
                   onClick={() => scrollToSection(dot.id)}
                   className={`absolute left-1/2 -translate-x-1/2 w-3 h-3 rounded-full border cursor-pointer group hover:scale-150 transition-all duration-300 z-10 ${dotClasses}`}
                   style={{ top: `${index * (100 / (NAV_DOTS.length - 1))}%` }}
@@ -256,27 +302,39 @@ export default function PortfolioHome() {
           </div>
         </nav>
 
-        {/* ─── Floating Next/Prev Navigation ─── */}
-        <div className="hidden lg:flex fixed right-12 bottom-12 z-50 flex-col gap-2">
+        {/* ─── Pływający pasek nawigacji z Wyceń Projekt (Desktop) ─── */}
+        <div className="hidden lg:flex fixed left-1/2 -translate-x-1/2 bottom-12 z-50 items-center bg-zinc-900/90 backdrop-blur-md border border-white/10 rounded-full p-2 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.8)]">
           <button 
             onClick={() => scrollToSection(Math.max(0, activeDot - 1))}
             disabled={activeDot === 0}
-            className="w-12 h-12 flex items-center justify-center bg-zinc-900/80 backdrop-blur-md border border-white/10 rounded-full text-zinc-400 hover:text-white hover:bg-orange-600 hover:border-orange-500 disabled:opacity-0 transition-all shadow-lg active:scale-95"
+            className="w-10 h-10 flex items-center justify-center rounded-full text-zinc-400 hover:text-white hover:bg-zinc-800 disabled:opacity-30 transition-all active:scale-95"
             aria-label="Poprzednia sekcja"
           >
             <ChevronUp size={20} />
           </button>
+          
+          <div className="w-px h-6 bg-white/10 mx-2" />
+          
+          <button 
+            onClick={() => scrollToSection(10)} // Scrolluje do sekcji "Kontakt" (id: 10 w NAV_DOTS)
+            className="px-6 py-2 bg-white text-black font-black uppercase text-[10px] tracking-[0.2em] rounded-full hover:bg-zinc-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.1)] active:scale-95 whitespace-nowrap mx-1"
+          >
+            Wyceń Projekt
+          </button>
+
+          <div className="w-px h-6 bg-white/10 mx-2" />
+
           <button 
             onClick={() => scrollToSection(Math.min(NAV_DOTS.length - 1, activeDot + 1))}
             disabled={activeDot === NAV_DOTS.length - 1}
-            className="w-12 h-12 flex items-center justify-center bg-zinc-900/80 backdrop-blur-md border border-white/10 rounded-full text-zinc-400 hover:text-white hover:bg-orange-600 hover:border-orange-500 disabled:opacity-0 transition-all shadow-lg active:scale-95"
+            className="w-10 h-10 flex items-center justify-center rounded-full text-zinc-400 hover:text-white hover:bg-zinc-800 disabled:opacity-30 transition-all active:scale-95"
             aria-label="Następna sekcja"
           >
             <ChevronDown size={20} />
           </button>
         </div>
 
-        {/* ─── Mobile Bottom Nav (Sticky CTA) ─── */}
+        {/* ─── Mobile Bottom Nav (Zmieniona na CTA Button) ─── */}
         <nav className="flex lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] bg-zinc-900/90 backdrop-blur-2xl border border-white/10 rounded-2xl z-50 items-center justify-between px-4 py-3 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.8)]">
           <div className="flex flex-col gap-1.5 w-[45%]">
             <div className="text-[9px] font-mono font-bold text-zinc-400 uppercase tracking-widest truncate">
@@ -292,7 +350,7 @@ export default function PortfolioHome() {
               pushGTMEvent('mobile_nav_cta_click');
               setIsBottomSheetOpen(true);
             }} 
-            className="px-5 py-2.5 bg-orange-600 text-white font-black uppercase text-[10px] tracking-widest rounded-xl hover:bg-orange-500 shadow-[0_0_15px_#ea580c40] transition-colors whitespace-nowrap active:scale-95"
+            className="px-5 py-2.5 bg-white text-black font-black uppercase text-[10px] tracking-widest rounded-xl hover:bg-zinc-200 shadow-lg transition-colors whitespace-nowrap active:scale-95"
           >
             Wyceń Projekt
           </button>
@@ -300,64 +358,63 @@ export default function PortfolioHome() {
 
         <main className="pl-0 lg:pl-24 w-full overflow-x-hidden">
           <div ref={horizontal1Ref} className="flex flex-col lg:flex-row w-full lg:w-[200%] h-auto lg:h-screen">
-            
-            <Hero onNavigate={scrollToSection} />
-
-       {/* ─── Usługi ─── */}
-       <section className="w-full lg:w-1/2 h-screen flex items-center justify-center px-6 sm:px-10 lg:px-12 py-10 lg:py-0 relative overflow-hidden bg-transparent">
-               <div className="flex flex-col gap-6 lg:gap-10 max-w-5xl w-full relative z-10 py-20 lg:py-10 lg:overflow-y-auto lg:max-h-full scrollbar-hide">
+            <div ref={setSectionRef(0)} className="w-full lg:w-1/2 h-full">
+              <Hero onNavigate={scrollToSection} />
+            </div>
+            <section ref={setSectionRef(1)} className="w-full lg:w-1/2 min-h-screen lg:h-full flex items-center justify-center px-6 sm:px-10 lg:px-12 py-20 lg:py-0 relative overflow-hidden bg-transparent">
+              <div className="flex flex-col gap-8 lg:gap-10 max-w-5xl w-full relative z-10">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 w-full">
-                  <MagicBento className="bg-zinc-900/50 backdrop-blur-md border border-white/10 hover:border-orange-500/50 hover:bg-zinc-900/80 transition-all group shadow-lg">
+                  <MagicBento className="bg-zinc-950 border border-white/5 hover:border-orange-500/40 transition-all group">
                     <div className="flex items-center justify-between mb-6">
                       <Zap className="text-orange-500 w-5 h-5 group-hover:scale-110 transition-transform" />
-                      <span className="font-mono text-[10px] text-zinc-400">Obszar_01</span>
+                      <span className="font-mono text-[10px] text-zinc-400">sys.module_01</span>
                     </div>
                     <h3 className="font-bold text-sm lg:text-base mb-3 text-white">
                       <span className="text-orange-500 mr-2">&gt;</span>Strony WWW
                     </h3>
-                    <p className="text-[11px] lg:text-xs text-zinc-400 font-light leading-relaxed">
-                      Unikalne wizytówki online, portfolia i strony korporacyjne z naciskiem na konwersję i design.
+                    <p className="text-xs text-zinc-300 font-light leading-relaxed">
+                      Architektura oparta o Next.js. Natychmiastowe ładowanie, przewaga w wynikach wyszukiwania i bezbłędny UX.
                     </p>
                   </MagicBento>
 
-                  <MagicBento className="bg-zinc-900/50 backdrop-blur-md border border-white/10 hover:border-orange-500/50 hover:bg-zinc-900/80 transition-all group shadow-lg">
+                  <MagicBento className="bg-zinc-950 border border-white/5 hover:border-orange-500/40 transition-all group">
                     <div className="flex items-center justify-between mb-6">
                       <Smartphone className="text-orange-500 w-5 h-5 group-hover:scale-110 transition-transform" />
-                      <span className="font-mono text-[10px] text-zinc-400">Obszar_02</span>
+                      <span className="font-mono text-[10px] text-zinc-400">sys.module_02</span>
                     </div>
                     <h3 className="font-bold text-sm lg:text-base mb-3 text-white">
                       <span className="text-orange-500 mr-2">&gt;</span>Aplikacje SaaS
                     </h3>
-                    <p className="text-[11px] lg:text-xs text-zinc-400 font-light leading-relaxed">
-                      Budowa skalowalnych systemów webowych (SaaS) i zaawansowanych dashboardów do zarządzania danymi.
+                    <p className="text-xs text-zinc-300 font-light leading-relaxed">
+                      Systemy klasy Enterprise. Relacyjne bazy danych, bezpieczna autoryzacja i skomplikowane procesy w czystym UI.
                     </p>
                   </MagicBento>
 
-                  <MagicBento className="bg-zinc-900/50 backdrop-blur-md border border-white/10 hover:border-orange-500/50 hover:bg-zinc-900/80 transition-all group shadow-lg">
+                  <MagicBento className="bg-zinc-950 border border-white/5 hover:border-orange-500/40 transition-all group">
                     <div className="flex items-center justify-between mb-6">
                       <Gauge className="text-orange-500 w-5 h-5 group-hover:scale-110 transition-transform" />
-                      <span className="font-mono text-[10px] text-zinc-400">Obszar_03</span>
+                      <span className="font-mono text-[10px] text-zinc-400">sys.module_03</span>
                     </div>
                     <h3 className="font-bold text-sm lg:text-base mb-3 text-white">
                       <span className="text-orange-500 mr-2">&gt;</span>Optymalizacja
                     </h3>
-                    <p className="text-[11px] lg:text-xs text-zinc-400 font-light leading-relaxed">
-                      Poprawa Core Web Vitals, dostępności i bezpieczeństwa istniejących już rozwiązań webowych.
+                    <p className="text-xs text-zinc-300 font-light leading-relaxed">
+                      Głęboka refaktoryzacja kodu, redukcja długu technologicznego i optymalizacja pod najwyższe standardy Core Web Vitals.
                     </p>
                   </MagicBento>
 
-                   <MagicBento className="bg-zinc-900/50 backdrop-blur-md border border-white/10 hover:border-orange-500/50 hover:bg-zinc-900/80 transition-all group shadow-lg">
-                     <div className="flex items-center justify-between mb-6">
-                       <Code2 className="text-orange-500 w-5 h-5 group-hover:scale-110 transition-transform" />
-                       <span className="font-mono text-[10px] text-zinc-400">Obszar_04</span>
-                     </div>
-                     <h3 className="font-bold text-sm lg:text-base mb-3 text-white">
-                       <span className="text-orange-500 mr-2">&gt;</span>Narzędzia B2B
-                     </h3>
-                     <p className="text-[11px] lg:text-xs text-zinc-400 font-light leading-relaxed">
-                       Dedykowane algorytmy, inteligentne konfiguratory ofert i kalkulatory zamieniające ruch w wartościowe zapytania.
-                     </p>
-                   </MagicBento>
+                  <MagicBento className="bg-zinc-950 border border-white/5 hover:border-orange-500/40 transition-all group">
+                    <div className="flex items-center justify-between mb-6">
+                      <Code2 className="text-orange-500 w-5 h-5 group-hover:scale-110 transition-transform" />
+                      <span className="font-mono text-[10px] text-zinc-400">sys.module_04</span>
+                    </div>
+                    <h3 className="font-bold text-sm lg:text-base mb-3 text-white">
+                      <span className="text-orange-500 mr-2">&gt;</span>Narzędzia B2B
+                    </h3>
+                    <p className="text-xs text-zinc-300 font-light leading-relaxed">
+                      Dedykowane algorytmy, inteligentne konfiguratory ofert i kalkulatory zamieniające ruch w wartościowe zapytania.
+                    </p>
+                  </MagicBento>
                 </div>
 
                 <motion.div 
@@ -370,7 +427,7 @@ export default function PortfolioHome() {
                     <div className="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
                       <Terminal size={16} className="text-orange-500" />
                     </div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Zawsze na bieżąco:</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Scale_Logic:</span>
                   </div>
                   <p className="text-[11px] lg:text-xs text-zinc-400 font-light leading-relaxed text-center sm:text-left">
                     Moje wsparcie obejmuje pełne spektrum techniczne: od <span className="text-zinc-200">mikro-optymalizacji</span> (np. szybkość obrazów, poprawa LCP) po <span className="text-zinc-200">złożone systemy dedykowane</span>. Niezależnie od skali zadania, jakość kodu pozostaje bezkompromisowa.
@@ -380,23 +437,21 @@ export default function PortfolioHome() {
             </section>
           </div>
 
-         {/* ─── O Mnie ─── */}
-         <section className="w-screen h-screen flex flex-col items-center justify-center px-6 lg:px-10 py-20 bg-transparent relative overflow-hidden">
+         <section ref={setSectionRef(2)} className="w-screen h-screen flex flex-col items-center justify-center px-6 lg:px-10 py-20 bg-transparent relative overflow-hidden">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full opacity-[0.02] pointer-events-none text-[25vw] font-black text-center leading-none select-none tracking-tighter">
               ROOT
             </div>
             <div className="relative z-10 w-full max-w-4xl flex flex-col items-center text-center">
               
-              {/* 🔥 Zmiana text-zinc-500 na text-zinc-400 */}
               <div className="font-mono text-[10px] text-zinc-400 mb-8 flex items-center gap-2 tracking-[0.2em]">
                 <span className="text-orange-500">~/marcin-molenda</span>
                 <span className="text-zinc-400">/</span>
                 <Terminal size={12} className="text-zinc-400" />
-                <span className="text-zinc-400">Kim jestem</span>
+                <span className="text-zinc-400">whoami --full</span>
               </div>
               
               <h2 className="text-4xl sm:text-6xl lg:text-7xl xl:text-[5.5rem] mb-10 tracking-tighter text-white leading-[0.9] max-w-3xl">
-                <span className="text-orange-500 mr-4 font-mono font-light">&gt;</span>Rozwiązania szyte na miarę.
+                <span className="text-orange-500 mr-4 font-mono font-light">&gt;</span>Kod pisany pod Twoje zasady.
               </h2>
               
               <div className="space-y-6 max-w-2xl">
@@ -411,12 +466,12 @@ export default function PortfolioHome() {
               <div className="mt-16 flex flex-col items-center gap-8">
                 <div className="flex items-center gap-4">
                   <div className="w-8 h-px bg-zinc-800" />
-                  <span className="font-mono text-[9px] text-zinc-400 uppercase tracking-[0.4em]">Gotowy do działania</span>
+                  <span className="font-mono text-[9px] text-zinc-400 uppercase tracking-[0.4em]">Ready for execution</span>
                   <div className="w-8 h-px bg-zinc-800" />
                 </div>
                 
                 <div className="flex flex-col items-center gap-3 animate-bounce">
-                  <span className="font-mono text-[9px] uppercase tracking-widest text-orange-600">Poznajmy się lepiej</span>
+                  <span className="font-mono text-[9px] uppercase tracking-widest text-orange-600">Scroll.init()</span>
                   <ArrowRight className="w-4 h-4 rotate-90 text-orange-600" />
                 </div>
               </div>
@@ -425,8 +480,7 @@ export default function PortfolioHome() {
 
           <div ref={horizontal2Ref} className="flex flex-col lg:flex-row w-full lg:w-[600%] h-auto lg:h-screen bg-transparent">
             
-            {/* Portfolio Intro */}
-            <section className="w-full lg:w-1/6 min-h-[50vh] lg:h-full flex flex-col items-center justify-center bg-transparent relative overflow-hidden py-20 lg:py-0 border-y lg:border-none border-white/5">
+            <section ref={setSectionRef(3)} className="w-full lg:w-1/6 min-h-[50vh] lg:h-full flex flex-col items-center justify-center bg-transparent relative overflow-hidden py-20 lg:py-0 border-y lg:border-none border-white/5">
               <div className="absolute -top-40 -left-40 w-[300px] h-[300px] lg:w-[500px] lg:h-[500px] bg-orange-900/10 blur-[120px] rounded-full pointer-events-none" />
               <div className="font-mono text-[10px] text-orange-500 mb-4 flex items-center gap-2">
                 <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse" />
@@ -437,8 +491,7 @@ export default function PortfolioHome() {
               </h2>
             </section>
 
-            {/* Sklep Urwis */}
-            <section className="w-full lg:w-1/6 min-h-screen lg:h-full flex items-center justify-center bg-transparent lg:border-l border-white/5 px-6 lg:px-20 py-20 lg:py-0">
+            <section ref={setSectionRef(4)} className="w-full lg:w-1/6 min-h-screen lg:h-full flex items-center justify-center bg-transparent lg:border-l border-white/5 px-6 lg:px-20 py-20 lg:py-0">
               <div className="flex flex-col lg:grid lg:grid-cols-2 gap-10 lg:gap-16 items-center w-full">
                 <div className="space-y-6 text-center lg:text-left order-2 lg:order-1 relative z-10">
                   <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-900 border border-white/5 rounded-md mx-auto lg:mx-0">
@@ -457,14 +510,13 @@ export default function PortfolioHome() {
                         handleOpenDemo({ url: 'https://www.sklep-urwis.pl', title: 'sklep-urwis.pl', colorClass: 'text-orange-500', bgClass: 'bg-orange-800' });
                       }} className="px-8 py-4 bg-orange-800 text-white font-mono uppercase text-[10px] lg:text-xs tracking-widest rounded-lg shadow-lg hover:bg-orange-700 transition-colors flex items-center gap-3">
                         <Terminal size={14} />
-                        <span>Zobacz Demo</span>
+                        <span>Init Demo</span>
                       </button>
                     </MagneticWrapper>
                   </div>
                 </div>
                 <div className="aspect-4/3 w-full bg-zinc-950/40 rounded-2xl border border-white/10 overflow-hidden relative group shadow-2xl order-1 lg:order-2">
                   <UrwisModel />
-                  {/* Overlay — pointer-events-none allows dragging the 3D model underneath */}
                   <div className="absolute inset-0 bg-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-end justify-between p-4 pointer-events-none">
                     <button 
                       onClick={() => {
@@ -485,8 +537,7 @@ export default function PortfolioHome() {
               </div>
             </section>
 
-            {/* zamowtu.pl */}
-            <section className="w-full lg:w-1/6 min-h-screen lg:h-full flex items-center justify-center bg-transparent lg:border-l border-white/5 px-6 lg:px-20 py-20 lg:py-0 border-t lg:border-none">
+            <section ref={setSectionRef(5)} className="w-full lg:w-1/6 min-h-screen lg:h-full flex items-center justify-center bg-transparent lg:border-l border-white/5 px-6 lg:px-20 py-20 lg:py-0 border-t lg:border-none">
               <div className="flex flex-col lg:grid lg:grid-cols-2 gap-10 lg:gap-16 items-center w-full">
                 <div className="space-y-6 text-center lg:text-left order-2 lg:order-1 relative z-10">
                   <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-900 border border-white/5 rounded-md mx-auto lg:mx-0">
@@ -502,25 +553,24 @@ export default function PortfolioHome() {
                         handleOpenDemo({ url: 'https://zamówtu.pl/demo', title: 'zamowtu.pl', colorClass: 'text-orange-500', bgClass: 'bg-orange-800' });
                       }} className="px-8 py-4 bg-orange-800 text-white font-mono uppercase text-[10px] lg:text-xs tracking-widest rounded-lg shadow-lg hover:bg-orange-700 transition-colors flex items-center gap-3">
                         <Terminal size={14} />
-                        <span>Zobacz Demo</span>
+                        <span>Init Demo</span>
                       </button>
                     </MagneticWrapper>
                   </div>
                 </div>
-                <TiltCard disableDesktop onClick={() => {
+                <div onClick={() => {
                   pushGTMEvent('portfolio_obraz_uruchomiono_demo', { projekt: 'zamowtu.pl' });
                   handleOpenDemo({ url: 'https://zamówtu.pl/demo', title: 'zamowtu.pl', colorClass: 'text-orange-500', bgClass: 'bg-orange-800' });
-                }} className="aspect-4/3 w-full cursor-pointer order-1 lg:order-2 group">
+                }} className="aspect-4/3 w-full bg-zinc-900 rounded-2xl border border-white/10 overflow-hidden relative group shadow-2xl cursor-pointer order-1 lg:order-2">
                   <Image src="/zamowtu.webp" alt="Podgląd systemu zamówień Zamowtu" fill priority sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
                   <div className="absolute inset-0 bg-zinc-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <span className="text-white font-mono font-bold text-[10px] uppercase tracking-widest bg-orange-800 px-6 py-3 rounded-lg shadow-2xl">Uruchom</span>
+                    <span className="text-white font-mono font-bold text-[10px] uppercase tracking-widest bg-orange-800 px-6 py-3 rounded-lg shadow-2xl">Execute</span>
                   </div>
-                </TiltCard>
+                </div>
               </div>
             </section>
 
-            {/* Zielnik */}
-            <section className="w-full lg:w-1/6 min-h-screen lg:h-full flex items-center justify-center bg-transparent lg:border-l border-white/5 px-6 lg:px-20 py-20 lg:py-0 border-t lg:border-none">
+            <section ref={setSectionRef(6)} className="w-full lg:w-1/6 min-h-screen lg:h-full flex items-center justify-center bg-transparent lg:border-l border-white/5 px-6 lg:px-20 py-20 lg:py-0 border-t lg:border-none">
               <div className="flex flex-col lg:grid lg:grid-cols-2 gap-10 lg:gap-16 items-center w-full">
                 <div className="space-y-6 text-center lg:text-left order-2 lg:order-1 relative z-10">
                   <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-900 border border-white/5 rounded-md mx-auto lg:mx-0">
@@ -530,31 +580,29 @@ export default function PortfolioHome() {
                   <h2 className="text-4xl sm:text-6xl text-white tracking-tighter">Zielnik</h2>
                   <p className="text-zinc-400 text-sm sm:text-base font-light leading-relaxed">Zaawansowana aplikacja terenowa PWA dla pasjonatów przyrody, łącząca Google Gemini AI z precyzyjną kartografią Mazowsza. System wykorzystuje model Gemini Flash-Lite do inteligentnego skanowania roślin oraz interaktywnego czatu botanicznego w czasie rzeczywistym. Wdrożyłem unikalną mechanikę &quot;Mgły Wojny&quot; (Fog of War) na mapie, system grywalizacji odkryć oraz pełną obsługę Offline First z synchronizacją danych przez Supabase, tworząc elitarne narzędzie do cyfrowej dokumentacji flory.</p>
                 </div>
-                <TiltCard disableDesktop className="aspect-4/3 w-full order-1 lg:order-2 group">
+                <div className="aspect-4/3 w-full bg-zinc-900 rounded-2xl border border-white/10 overflow-hidden relative group shadow-2xl order-1 lg:order-2">
                   <AnimatedWebP src="/zielnik.webp" alt="Animacja projektu Zielnik" className="opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
-                </TiltCard>
+                </div>
               </div>
             </section>
 
-            {/* MDK */}
-            <section className="w-full lg:w-1/6 min-h-screen lg:h-full flex items-center justify-center bg-transparent lg:border-l border-white/5 px-6 lg:px-20 py-20 lg:py-0 border-t lg:border-none">
+            <section ref={setSectionRef(7)} className="w-full lg:w-1/6 min-h-screen lg:h-full flex items-center justify-center bg-transparent lg:border-l border-white/5 px-6 lg:px-20 py-20 lg:py-0 border-t lg:border-none">
               <div className="flex flex-col lg:grid lg:grid-cols-2 gap-10 lg:gap-16 items-center w-full">
                 <div className="space-y-6 text-center lg:text-left order-2 lg:order-1 relative z-10">
                   <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-900 border border-white/5 rounded-md mx-auto lg:mx-0">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                    <span className="font-mono text-[9px] text-zinc-300 uppercase tracking-widest">DevTools / Automatyzacja</span>
+                    <span className="font-mono text-[9px] text-zinc-300 uppercase tracking-widest">DevTools / Boilerplate</span>
                   </div>
                   <h2 className="text-4xl sm:text-6xl text-white tracking-tighter">MDK</h2>
-                  <p className="text-zinc-400 text-sm sm:text-base font-light leading-relaxed">Molenda Development Kit to mój autorski system optymalizacji produkcji oprogramowania. Zamiast pisać każdą aplikację od zera – mechanizmy MDK automatycznie generują najwyższej jakości architekturę bazodanową, systemy zabezpieczeń ról (RBAC) oraz fundamenty aplikacji, przyspieszając proces wdrożenia komercyjnego (time-to-market) o kilkadziesiąt procent względem klasycznych agencji IT. Dzięki temu budżet projektu inwestowany jest wyłącznie w to, co realnie napędza Twój biznes.</p>
+                  <p className="text-zinc-400 text-sm sm:text-base font-light leading-relaxed">Molenda Development Kit to autorski ekosystem narzędziowy typu &quot;Premium Boilerplate&quot;, zaprojektowany do błyskawicznego wdrażania zaawansowanych aplikacji SaaS i e-commerce. MDK integruje autorskie systemy automatyzacji ról, zaawansowaną architekturę baz danych oraz gotowe moduły AI (MDK Brain). Jest to fundament moich wdrożeń klasy Enterprise, optymalizujący time-to-market przy zachowaniu najwyższej jakości inżynieryjnej i bezpieczeństwa.</p>
                 </div>
-                <TiltCard disableDesktop className="aspect-4/3 w-full order-1 lg:order-2 group">
+                <div className="aspect-4/3 w-full bg-zinc-900 rounded-2xl border border-white/10 overflow-hidden relative group shadow-2xl order-1 lg:order-2">
                   <AnimatedWebP src="/MDK.webp" alt="Animacja projektu MDK" className="opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
-                </TiltCard>
+                </div>
               </div>
             </section>
 
-            {/* Opal */}
-            <section className="w-full lg:w-1/6 min-h-screen lg:h-full flex items-center justify-center bg-transparent lg:border-l border-white/5 px-6 lg:px-20 py-20 lg:py-0 border-t lg:border-none">
+            <section ref={setSectionRef(8)} className="w-full lg:w-1/6 min-h-screen lg:h-full flex items-center justify-center bg-transparent lg:border-l border-white/5 px-6 lg:px-20 py-20 lg:py-0 border-t lg:border-none">
               <div className="flex flex-col lg:grid lg:grid-cols-2 gap-10 lg:gap-16 items-center w-full">
                 <div className="space-y-6 text-center lg:text-left order-2 lg:order-1 relative z-10">
                   <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-900 border border-white/5 rounded-md mx-auto lg:mx-0">
@@ -564,75 +612,49 @@ export default function PortfolioHome() {
                   <h2 className="text-4xl sm:text-6xl text-white tracking-tighter">Opal</h2>
                   <p className="text-zinc-400 text-sm sm:text-base font-light leading-relaxed">Zaawansowany panel analityczny Business Intelligence (BI) wykorzystujący nienadzorowane uczenie maszynowe (K-Means Clustering) do segmentacji rzeczywistych danych rynkowych. System, zbudowany w 100% w architekturze Node.js, eliminuje potrzebę zewnętrznych mikroserwisów Python, oferując błyskawiczną klasyfikację profili. Wdrożyłem interaktywny Cluster Explorer z diagnostyką Metody Łokcia (Elbow Method), wielowymiarowe wykresy profilowe oraz symulator &quot;What-If&quot;, dostarczając precyzyjnych wglądów biznesowych w czasie rzeczywistym.</p>
                 </div>
-                <TiltCard disableDesktop className="aspect-4/3 w-full order-1 lg:order-2 group">
+                <div className="aspect-4/3 w-full bg-zinc-900 rounded-2xl border border-white/10 overflow-hidden relative group shadow-2xl order-1 lg:order-2">
                   <AnimatedWebP src="/opal.webp" alt="Animacja projektu Opal" className="opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
-                </TiltCard>
+                </div>
               </div>
             </section>
           </div>
 
-          <FAQ />
+          <div id="faq" ref={setSectionRef(9)}>
+            <FAQ />
+          </div>
 
-          {/* SEKCJA 7: Kontakt */}
-          <section className="w-full h-screen flex flex-col items-center justify-center px-6 sm:px-10 lg:px-20 bg-transparent border-t border-white/5 relative overflow-hidden py-10 lg:py-0">
-            <Particles color="#ea580c" />
-            <div className="max-w-5xl w-full bg-zinc-900/40 border border-white/5 rounded-[2rem] p-8 lg:p-16 flex flex-col lg:grid lg:grid-cols-2 gap-10 lg:gap-16 relative z-10 backdrop-blur-2xl shadow-2xl">
-              <div className="text-center lg:text-left flex flex-col justify-center">
-                <div className="flex items-center justify-center lg:justify-start gap-3 font-mono text-[9px] sm:text-[10px] text-zinc-500 uppercase tracking-widest mb-8">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-50"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
-                  </span>
-                  <span>Zapraszam do kontaktu</span>
-                </div>
-                <h2 className="text-4xl sm:text-5xl lg:text-6xl tracking-tighter mb-6 text-white">Czas na konkret.</h2>
-                <p className="text-zinc-400 mb-10 font-light leading-relaxed text-sm sm:text-base max-w-md mx-auto lg:mx-0">
-                Ty wyznaczasz cel biznesowy, ja projektuję architekturę, która go realizuje. Bez technologicznych kompromisów.
-                </p>
-                <a href="mailto:kontakt@molendadevelopment.pl" className="text-sm sm:text-base font-mono text-zinc-300 border-b border-white/10 pb-1 hover:text-white hover:border-orange-500 transition-colors w-fit mx-auto lg:mx-0">
-                  kontakt@molendadevelopment.pl
-                </a>
-                <div className="flex justify-center lg:justify-start gap-4 mt-12">
-                  <a href="https://www.facebook.com/profile.php?id=61564367727437" target="_blank" rel="noopener noreferrer" aria-label="Profil Marcin Molenda Development na Facebooku" onClick={() => pushGTMEvent('klikniecie_socialF', { platforma: 'Facebook' })} className="p-3 bg-zinc-900 rounded-xl border border-white/5 hover:border-zinc-500 transition-all group">
-                    <Facebook className="w-4 h-4 text-zinc-500 group-hover:text-white" />
-                  </a>
-                  <a href="https://www.linkedin.com/in/marcin-molenda-447251289/" target="_blank" rel="noopener noreferrer" aria-label="Profil Marcin Molenda na LinkedIn" onClick={() => pushGTMEvent('klikniecie_socialL', { platforma: 'LinkedIn' })} className="p-3 bg-zinc-900 rounded-xl border border-white/5 hover:border-zinc-500 transition-all group">
-                    <Linkedin className="w-4 h-4 text-zinc-500 group-hover:text-white" />
-                  </a>
-                </div>
-              </div>
+          {/* SEKCJA 7: Kontakt - Minimalizm i Klasa */}
+          <section id="kontakt" ref={setSectionRef(10)} className="w-full min-h-screen flex flex-col items-center justify-start px-4 sm:px-6 lg:px-10 bg-transparent relative py-20 lg:py-32">
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-zinc-950/50 to-black pointer-events-none" />
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+            
+            <div className="w-full max-w-3xl text-center flex flex-col justify-center items-center mb-16 px-4 relative z-10">
+              <h2 className="text-4xl md:text-5xl font-light tracking-wide mb-6 text-white leading-tight">
+                Porozmawiajmy o Twoim projekcie.
+              </h2>
+              <p className="text-zinc-500 font-light leading-relaxed text-sm md:text-lg mx-auto mb-10">
+                Opisz mi w kilku krokach, z czym mierzysz się w swojej firmie. Przeanalizuję Twój profil i wrócę z gotowym planem działania.
+              </p>
+              <a href="mailto:kontakt@molendadevelopment.pl" className="text-xs md:text-sm font-mono text-zinc-400 hover:text-white hover:underline underline-offset-4 transition-all">
+                kontakt@molendadevelopment.pl
+              </a>
+            </div>
 
-              <div className="relative bg-zinc-950 border border-white/10 rounded-2xl p-6 sm:p-8 shadow-2xl">
-                <div className="absolute top-4 left-4 flex gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-zinc-800" /><div className="w-2.5 h-2.5 rounded-full bg-zinc-800" /><div className="w-2.5 h-2.5 rounded-full bg-zinc-800" />
-                </div>
-                <form onSubmit={handleFormSubmit} className="space-y-4 mt-6">
-                  {isFormSubmitted ? (
-                    <div className="w-full h-48 flex flex-col items-center justify-center text-center">
-                      <div className="font-mono text-green-500/70 text-xs mb-3">Wiadomość wysłana</div>
-                      <p className="text-white font-bold mb-1">Dziękuję za kontakt.</p>
-                      <p className="text-xs text-zinc-500 font-light">Odezwę się najszybciej, jak to możliwe.</p>
-                    </div>
-                  ) : (
-                    <>
-                      <input type="text" name="name" placeholder="Imię / Nazwa Firmy" aria-label="Twoje Imię" required disabled={isSubmitting} className="w-full p-4 bg-zinc-900 border border-white/5 rounded-xl outline-none focus:border-white/20 text-zinc-200 text-sm font-mono transition-colors placeholder:text-zinc-600" />
-                      <input type="email" name="email" placeholder="Adres e-mail" aria-label="Twój Email" required disabled={isSubmitting} className="w-full p-4 bg-zinc-900 border border-white/5 rounded-xl outline-none focus:border-white/20 text-zinc-200 text-sm font-mono transition-colors placeholder:text-zinc-600" />
-                      <textarea name="msg" placeholder="Mały problem czy wielka wizja? Zostaw szczegóły tutaj..." aria-label="Wiadomość" rows={4} required disabled={isSubmitting} className="w-full p-4 bg-zinc-900 border border-white/5 rounded-xl outline-none focus:border-white/20 text-zinc-200 text-sm font-mono resize-none transition-colors placeholder:text-zinc-600" />
-                      {formError && <p className="text-red-500/80 font-mono text-[10px] px-2">error: {formError}</p>}
-                      <MagneticWrapper className="w-full pt-2">
-                        <button type="submit" disabled={isSubmitting} className="w-full py-5 bg-white text-black font-black uppercase text-[10px] tracking-[0.2em] rounded-xl shadow-lg hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3">
-                          {isSubmitting ? 'Przetwarzanie...' : 'Wyślij wiadomość'}
-                          {!isSubmitting && <ArrowRight size={14} />}
-                        </button>
-                      </MagneticWrapper>
-                    </>
-                  )}
-                </form>
+            <div className="w-full max-w-7xl bg-zinc-950/40 border border-white/5 rounded-[2rem] lg:rounded-[3rem] p-4 sm:p-10 lg:p-20 relative z-10 backdrop-blur-xl shadow-2xl overflow-hidden">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+              
+              <div className="relative z-20">
+                <Configurator />
               </div>
             </div>
-            <div className="mt-12 lg:absolute lg:bottom-6 lg:mt-0 text-[9px] lg:text-[10px] text-zinc-400 font-mono uppercase tracking-[0.2em] text-center flex flex-col items-center gap-2">
+            
+            <div className="mt-16 text-[9px] md:text-[10px] text-zinc-600 font-mono uppercase tracking-[0.2em] text-center flex flex-col items-center gap-3 relative z-10">
+              <div className="flex justify-center gap-4 mb-2">
+                <a href="https://www.facebook.com/profile.php?id=61564367727437" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-400 transition-colors">Facebook</a>
+                <span>//</span>
+                <a href="https://www.linkedin.com/in/marcin-molenda-447251289/" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-400 transition-colors">LinkedIn</a>
+              </div>
               <span>&copy; {new Date().getFullYear()} Marcin Molenda // molendadevelopment.pl</span>
-              <Link href="/polityka-prywatnosci" className="hover:text-orange-500 transition-colors underline-offset-2 hover:underline">Polityka Prywatności</Link>
             </div>
           </section>
 

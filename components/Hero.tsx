@@ -163,7 +163,7 @@ export default function Hero({ onNavigate }: HeroProps) {
               <button
                 onClick={() => {
                   pushGTMEvent('strona_glowna_inicjuj_kontakt_klikniecie');
-                  onNavigate(6);
+                  onNavigate(10);
                 }}
                 className="px-8 py-4 bg-zinc-950 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-500 font-black uppercase tracking-[0.15em] text-[10px] lg:text-xs rounded-xl transition-colors flex items-center gap-3"
               >
